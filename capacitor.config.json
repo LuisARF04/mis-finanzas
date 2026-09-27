@@ -1,0 +1,15 @@
+{
+  "appId": "com.misfinanzas.cup",
+  "appName": "Mis Finanzas",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#14161b"
+  },
+  "plugins": {
+    "StatusBar": {
+      "overlaysWebView": false,
+      "style": "DARK",
+      "backgroundColor": "#14161b"
+    }
+  }
+}
