@@ -506,7 +506,7 @@ let toastT;
 function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2200); }
 
 /* ====== Navegación ====== */
-const APP_VERSION = '1.8';
+const APP_VERSION = '1.9';
 function applyAnim() { document.documentElement.classList.toggle('no-anim', !S.anim); }
 function toggleAnim() { S.anim = !S.anim; save(); applyAnim(); render(); toast(S.anim ? 'Animaciones activadas' : 'Animaciones desactivadas'); }
 function render() {
@@ -1027,7 +1027,7 @@ function openTxDetail(id) {
 /* --- Tasa rápida --- */
 function openRate() {
   openSheet('Tasa de cambio', `
-    <div class="field"><label>1 USD =</label><div class="inp-wrap"><input id="r-usd" class="inp amt" inputmode="decimal" value="${S.rates.USD}"><span class="inp-suf">CUP</span></div></div>
+    <div class="field"><label>1 USD =</label><div class="inp-wrap"><input id="r-usd" class="inp" inputmode="decimal" value="${S.rates.USD}"><span class="inp-suf">CUP</span></div></div>
     <div class="field"><label>1 QUSD =</label><div class="inp-wrap"><input id="r-usdt" class="inp" inputmode="decimal" value="${S.rates.QUSD}"><span class="inp-suf">CUP</span></div></div>
     <div class="field"><label>1 MLC =</label><div class="inp-wrap"><input id="r-mlc" class="inp" inputmode="decimal" value="${S.rates.MLC}"><span class="inp-suf">CUP</span></div></div>
     <button class="btn" onclick="saveRates()">Guardar tasa</button>`);
@@ -1069,7 +1069,7 @@ function onboard() {
   openSheet('Bienvenido 👋', `
     <p class="muted" style="margin-bottom:16px;line-height:1.5">Configura lo básico. Puedes cambiarlo cuando quieras en Ajustes.</p>
     <div class="field"><label>Tu nombre</label><input id="o-name" class="inp" maxlength="40"></div>
-    <div class="field"><label>¿A cuánto está el dólar hoy?</label><div class="inp-wrap"><input id="o-usd" class="inp amt" inputmode="decimal" value="${S.rates.USD}"><span class="inp-suf">CUP</span></div></div>
+    <div class="field"><label>¿A cuánto está el dólar hoy?</label><div class="inp-wrap"><input id="o-usd" class="inp" inputmode="decimal" value="${S.rates.USD}"><span class="inp-suf">CUP</span></div></div>
     <div class="field"><label>¿Y el QUSD?</label><div class="inp-wrap"><input id="o-usdt" class="inp" inputmode="decimal" value="${S.rates.QUSD}"><span class="inp-suf">CUP</span></div></div>
     <button class="btn" onclick="finishOnboard()">Empezar</button>`);
 }
