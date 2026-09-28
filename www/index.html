@@ -15,7 +15,8 @@
   --font:'Urbanist',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{min-height:100%;overflow-x:hidden}
+html,body{min-height:100%}
+html{touch-action:manipulation}
 body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(120% 50% at 50% 0%,#202632 0%,var(--bg) 70%)}
 body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;-webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
 button,input,select{font:inherit;color:inherit}
@@ -32,7 +33,7 @@ svg{display:block}
 .hello{font-size:21px;font-weight:600}
 .uname{color:var(--muted);font-size:15px}
 .grow{flex:1;min-width:0}
-.icon-btn{width:48px;height:48px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;flex-shrink:0}
+.icon-btn{position:relative;width:48px;height:48px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;flex-shrink:0}
 .icon-btn svg{width:22px;height:22px}
 .icon-btn.sm{width:40px;height:40px}
 .icon-btn.sm svg{width:18px;height:18px}
@@ -45,6 +46,9 @@ svg{display:block}
 .small{font-size:13px}
 .chip-btn{background:var(--surface3);border-radius:999px;padding:7px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px;color:var(--text);white-space:nowrap;cursor:pointer}
 .chip-btn svg{width:14px;height:14px}
+.chip-btn.upd{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.chip-btn:disabled{opacity:.6}
+.dot-upd{position:absolute;top:9px;right:10px;width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--surface)}
 .big-amount{flex-wrap:wrap;font-size:clamp(24px,8.5vw,40px);font-weight:600;letter-spacing:-.5px;margin-top:8px;display:flex;align-items:baseline;gap:8px}
 .big-amount small{font-size:16px;color:var(--muted);font-weight:500}
 .eye{margin-left:auto;align-self:center;color:var(--muted);padding:6px}
@@ -525,7 +529,44 @@ let toastT;
 function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2200); }
 
 /* ====== Navegación ====== */
-const APP_VERSION = '2.4';
+const APP_VERSION = '2.5';
+
+/* ====== Actualizaciones desde GitHub Releases ====== */
+const GH_REPO = 'LuisARF04/mis-finanzas'; // usuario/repositorio donde se compila el APK
+const UPD = { state: 'idle', latest: null, url: null, msg: '' };
+const verParts = v => String(v).split('.').map(n => parseInt(n, 10) || 0);
+function isNewer(a, b) {
+  const x = verParts(a), y = verParts(b);
+  for (let i = 0; i < Math.max(x.length, y.length); i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d > 0; }
+  return false;
+}
+function updText() {
+  return { idle: 'Busca si hay una versión nueva', checking: 'Buscando…', latest: 'Tienes la última versión',
+    available: `Hay una versión nueva: ${UPD.latest}`, error: UPD.msg }[UPD.state];
+}
+async function checkUpdate(silent) {
+  UPD.state = 'checking'; if (!silent && UI.screen === 'settings') render();
+  try {
+    const r = await fetch(`https://api.github.com/repos/${GH_REPO}/releases/latest`, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' });
+    if (!r.ok) throw new Error(r.status === 404 ? 'No se encontró el repositorio (¿es público?) o aún no tiene versiones' : 'GitHub respondió con error ' + r.status);
+    const d = await r.json();
+    const m = /(\d+(?:\.\d+)+)/.exec(d.tag_name || d.name || '');
+    const apk = (d.assets || []).find(a => /\.apk$/i.test(a.name));
+    UPD.latest = m ? m[1] : null;
+    UPD.url = apk ? apk.browser_download_url : d.html_url;
+    UPD.state = UPD.latest && isNewer(UPD.latest, APP_VERSION) ? 'available' : 'latest';
+  } catch (e) {
+    UPD.state = silent ? 'idle' : 'error';
+    UPD.msg = e instanceof TypeError ? 'Sin conexión a internet' : e.message;
+  }
+  if (silent) { if (UPD.state === 'available') { toast(`Versión ${UPD.latest} disponible en Ajustes`); render(); } }
+  else if (UI.screen === 'settings') render();
+}
+function downloadUpdate() {
+  const Br = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser;
+  if (Br) Br.open({ url: UPD.url }); else window.open(UPD.url, '_blank');
+  toast('Cuando termine la descarga, toca el archivo para instalar');
+}
 function applyAnim() { document.documentElement.classList.toggle('no-anim', !S.anim); }
 function toggleAnim() { S.anim = !S.anim; save(); applyAnim(); render(); toast(S.anim ? 'Animaciones activadas' : 'Animaciones desactivadas'); }
 function render() {
@@ -614,7 +655,7 @@ function vHome() {
   <header class="top">
     <label class="avatar" aria-label="Cambiar foto de perfil">${avatarInner()}<input type="file" accept="image/*" hidden onchange="setPhoto(this)"></label>
     <div class="grow"><div class="hello">${greeting()}</div><div class="uname">${esc(S.name || 'Usuario')}</div></div>
-    <button class="icon-btn" onclick="go('settings')" aria-label="Ajustes">${I.gear}</button>
+    <button class="icon-btn" onclick="go('settings')" aria-label="Ajustes">${I.gear}${UPD.state === 'available' ? '<span class="dot-upd"></span>' : ''}</button>
   </header>
 
   <section class="panel">
@@ -827,6 +868,14 @@ function vSettings() {
   return `
   <header class="top"><button class="icon-btn" onclick="go('home')" aria-label="Volver">${I.back}</button><h1>Ajustes</h1><span class="spacer"></span></header>
 
+  <div class="set-title">Actualización</div>
+  <div class="set-group"><div class="set-row">
+    <div class="grow"><div>Versión ${APP_VERSION}</div><div class="muted small">${updText()}</div></div>
+    ${UPD.state === 'available'
+      ? `<button class="chip-btn upd" onclick="downloadUpdate()">Descargar ${UPD.latest}</button>`
+      : `<button class="chip-btn" onclick="checkUpdate()" ${UPD.state === 'checking' ? 'disabled' : ''}>${UPD.state === 'checking' ? 'Buscando…' : 'Buscar'}</button>`}
+  </div></div>
+
   <div class="set-title">Perfil</div>
   <div class="set-group">
     <div class="set-row"><label class="avatar" style="width:44px;height:44px;font-size:15px">${avatarInner()}<input type="file" accept="image/*" hidden onchange="setPhoto(this)"></label>
@@ -859,7 +908,7 @@ function vSettings() {
   <div class="set-title">Datos</div>
   <div class="set-group"><div class="set-row"><span class="grow muted">${S.cards.length} tarjetas y ${S.tx.length} movimientos guardados en este teléfono</span></div></div>
   <button class="btn danger" onclick="confirmReset()">Borrar todos los datos</button>
-  <p class="muted small" style="text-align:center;margin-top:18px">Versión ${APP_VERSION}</p>`;
+`;
 }
 function setRate(c, el) {
   const v = parseNum(el.value);
@@ -1154,6 +1203,7 @@ save();
 applyAnim();
 render();
 if (!S.onboarded) setTimeout(onboard, 300);
+setTimeout(() => checkUpdate(true), 2500);
 </script>
 </body>
 </html>
