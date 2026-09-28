@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14161b">
-<title>Mis Finanzas</title>
+<title>Wallet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -69,7 +69,14 @@ svg{display:block}
 .sc-name{display:flex;align-items:center;font-weight:600;font-size:15px;min-width:0}
 .sc-name .ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sc-sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
-.sc-mini{font-weight:600;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap;flex-shrink:0}
+.acc-check{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--surface3);display:grid;place-items:center;flex-shrink:0;color:var(--accent-ink);transition:background .15s,border-color .15s,transform .1s}
+.acc-check:active{transform:scale(.88)}
+.acc-check svg{width:14px;height:14px}
+.acc-check.on{background:var(--accent);border-color:var(--accent)}
+.conv-row{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);margin-bottom:-4px}
+.seg3cur{display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--surface2);border-radius:14px;padding:4px;margin-bottom:10px}
+.seg3cur button{padding:9px;border-radius:10px;color:var(--muted);font-weight:600;font-size:13px}
+.seg3cur button.on{background:var(--accent);color:var(--accent-ink)}
 .cdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;flex-shrink:0}
 .pc-t .cdot{vertical-align:0}
 .swatches{display:flex;gap:10px;flex-wrap:wrap}
@@ -611,7 +618,7 @@ const QR = (() => {
 const PALETTE = ['#ff8a5b', '#6fb6ff', '#c77dff', '#4dd4ac', '#ffc542', '#ff6b9a', '#8b7bff'];
 /* ====== Datos (se guardan en el teléfono) ====== */
 function defaults() {
-  return { v: 9, name: '', photo: '', onboarded: false, rates: { USD: 400, SQP: 420, MLC: 300 }, cards: [], contacts: [], tx: [], hide: false, anim: true, counter: { cur: 'CUP', counts: {} } };
+  return { v: 10, name: '', photo: '', onboarded: false, rates: { USD: 400, SQP: 420, MLC: 300 }, cards: [], contacts: [], tx: [], hide: false, anim: true, counter: { cur: 'CUP', counts: {} } };
 }
 // Versión 1 → 2: las tarjetas USDT pasan a tener su propia moneda
 function migrate(d) {
@@ -665,6 +672,8 @@ function migrate(d) {
   if (d.v < 8) { d.cards.forEach((c, i) => { if (!c.color) c.color = PALETTE[i % PALETTE.length]; }); d.v = 8; }
   // Versión 8 → 9: contador de billetes
   if (d.v < 9) { if (!d.counter) d.counter = { cur: 'CUP', counts: {} }; d.v = 9; }
+  // Versión 9 → 10: casilla para incluir la cuenta en el Saldo del inicio
+  if (d.v < 10) { d.cards.forEach(c => { if (c.included === undefined) c.included = true; }); d.v = 10; }
   return d;
 }
 let memStore = null;
@@ -682,7 +691,7 @@ function save() {
 }
 
 // Estado de la interfaz (no se guarda)
-const UI = { screen: 'home', sel: null, filter: 'all', card: 'all', q: '', month: null, cq: '', open: { me: true } };
+const UI = { screen: 'home', sel: null, filter: 'all', card: 'all', q: '', month: null, cq: '', open: { me: true }, convCur: 'CUP' };
 let F = {}; // estado del formulario abierto
 
 /* ====== Utilidades ====== */
@@ -770,6 +779,12 @@ function cardBal(c) {
   return b;
 }
 const totalCUP = () => S.cards.reduce((s, c) => s + toCUP(cardBal(c), c.currency), 0);
+// Solo las cuentas marcadas con su casilla cuentan para el "Saldo" del inicio
+const homeTotalCUP = () => S.cards.filter(c => c.included).reduce((s, c) => s + toCUP(cardBal(c), c.currency), 0);
+// Convierte el saldo de la cuenta seleccionada a la moneda elegida en el inicio
+// El saldo grande se expresa en la moneda elegida (CUP, USD o SQP)
+function homeSaldo(cur) { const cup = homeTotalCUP(); return cur === 'CUP' ? cup : cup / rate(cur); }
+function setConvCur(cur) { UI.convCur = cur; render(); }
 function getCat(t) {
   if (t.kind === 'transfer') return TRANSFER_CAT;
   const list = CATS[t.kind];
@@ -799,7 +814,7 @@ let toastT;
 function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2200); }
 
 /* ====== Navegación ====== */
-const APP_VERSION = '2.8.5';
+const APP_VERSION = '2.8.9';
 
 /* ====== Actualizaciones desde GitHub Releases ====== */
 const GH_REPO = 'LuisARF04/mis-finanzas'; // usuario/repositorio donde se compila el APK
@@ -852,7 +867,7 @@ function render() {
   renderNav();
   if (UI.screen === 'history') renderHistList();
   if (UI.screen === 'home') {
-    const to = totalCUP(), from = UI.lastTotal;
+    const to = homeSaldo(UI.convCur), from = UI.lastTotal;
     UI.lastTotal = to;
     if (!S.hide && from !== to) countUp($('#bal'), from || 0, to);
   }
@@ -929,14 +944,17 @@ function vHome() {
   </header>
 
   <section class="panel">
-    <div class="row-between"><span class="muted">Mi saldo total</span>
+    <div class="row-between"><span class="muted">Saldo</span>
       <button class="chip-btn" onclick="go('stats')">Ver detalles ${I.upRight}</button></div>
-    <div class="big-amount"><span id="bal">${S.hide ? num(0) : nf.format(UI.lastTotal ?? 0)}</span><small>CUP</small>
+    <div class="big-amount"><span id="bal">${S.hide ? num(0) : nf.format(UI.lastTotal ?? 0)}</span><small>${UI.convCur}</small>
       <button class="eye" onclick="toggleHide()" aria-label="Mostrar u ocultar saldos">${S.hide ? I.eyeOff : I.eye}</button></div>
-    <div class="delta"><span class="${net >= 0 ? 'pos' : 'neg'}">${signed(net, 'CUP')}</span> <span class="muted">este mes</span></div>
+    <div class="delta"><span class="${net >= 0 ? 'pos' : 'neg'}">${signed(net / rate(UI.convCur), UI.convCur)}</span> <span class="muted">este mes</span></div>
+    ${S.cards.length ? `<div class="conv-row">
+      <div class="seg3cur">${['CUP', 'USD', 'SQP'].map(c => `<button class="${UI.convCur === c ? 'on' : ''}" onclick="setConvCur('${c}')">${c}</button>`).join('')}</div>
+    </div>` : ''}
   </section>
 
-  <div class="sec-head"><h2>Mis cuentas</h2><button class="chip-btn" onclick="openCardForm()">${I.plus} Agregar</button></div>
+  <div class="sec-head"><h2>Mis cuentas</h2><button class="chip-btn" onclick="selectAllAccounts()">${I.check} Seleccionar todas</button></div>
   ${S.cards.length ? stack() : `<div class="panel empty">Agrega tu primera tarjeta para empezar.<br><br><button class="btn" onclick="openCardForm()">Agregar tarjeta</button></div>`}
 
   <div class="sec-head"><h2>Recientes</h2>${S.tx.length ? `<button class="link" onclick="go('history')">Ver todo</button>` : ''}</div>
@@ -958,7 +976,7 @@ function stack() {
     return `<div class="stack-card ${front ? 'front' : ''} ${front && UI.justSel === c.id ? 'pop' : ''}" style="--i:${i};z-index:${i + 1}" onclick="${front ? `openCardDetail('${c.id}')` : `selectCard('${c.id}')`}">
       <div class="sc-row">${brandIcon(c.brand)}
         <div class="sc-id"><div class="sc-name"><i class="cdot" style="background:${accent(c)}"></i><span class="ell">${esc(acctTitle(c))}</span></div><div class="sc-sub">${esc(acctSub(c))}</div></div>
-        ${front ? '' : `<span class="sc-mini">${short(bal)}</span>`}${copyBtn(c)}</div>
+        <button class="acc-check ${c.included ? 'on' : ''}" onclick="event.stopPropagation();toggleInclude('${c.id}')" aria-label="Incluir en el saldo">${c.included ? I.check : ''}</button>${copyBtn(c)}</div>
       ${front ? `<div class="sc-front">
         <div class="muted">${esc(c.holder || 'Saldo')}</div>
         <div class="sc-bal">${num(bal)}<small>${c.currency}</small></div>
@@ -968,6 +986,8 @@ function stack() {
   }).join('')}</div>`;
 }
 function selectCard(id) { UI.sel = id; UI.justSel = id; render(); }
+function toggleInclude(id) { const c = cardById(id); if (!c) return; c.included = !c.included; save(); render(); }
+function selectAllAccounts() { S.cards.forEach(c => c.included = true); save(); render(); toast('Todas las cuentas seleccionadas'); }
 function avatarInner() { return S.photo ? `<img src="${S.photo}" alt="">` : esc(initials()); }
 // Foto de perfil: recorte cuadrado al centro, 256 px
 function setPhoto(inp) {
@@ -1081,7 +1101,7 @@ function contactList() {
 }
 function cgroup(id, force) {
   const me = id === 'me', ct = me ? null : ctById(id);
-  const cards = me ? S.cards : ct.cards, name = me ? (S.name || 'Yo') : ct.name;
+  const cards = me ? S.cards.filter(c => !BRANDS[c.brand].cash) : ct.cards, name = me ? (S.name || 'Yo') : ct.name;
   const av = me ? `<span class="cavatar me">${S.photo ? `<img src="${S.photo}" alt="">` : esc(initials())}</span>`
                 : (ct.photo ? `<span class="cavatar"><img src="${ct.photo}" alt=""></span>` : `<span class="cavatar" style="--ac:${avColor(name)}">${esc(ctInitials(name))}</span>`);
   const n = cards.length, sub = (me ? 'Tú · ' : '') + n + (n === 1 ? ' tarjeta' : ' tarjetas');
@@ -1638,7 +1658,7 @@ function saveCard() {
   if (phone && phone.length !== 8) return toast('El móvil debe tener 8 dígitos (sin +53)');
   const iv = $('#c-init').value.trim(), init = iv === '' ? 0 : parseNum(iv);
   if (isNaN(init)) return toast('El saldo inicial no es un número válido');
-  const data = { brand: F.brand, alias: $('#c-alias').value.trim(), holder: b.cash ? '' : $('#c-holder').value.trim(), number, last4, phone, color: F.color, currency: F.cur, initial: round2(init) };
+  const data = { brand: F.brand, alias: $('#c-alias').value.trim(), holder: b.cash ? '' : $('#c-holder').value.trim(), number, last4, phone, color: F.color, included: F.edit ? cardById(F.edit).included : true, currency: F.cur, initial: round2(init) };
   if (F.edit) {
     const c = cardById(F.edit);
     if (c.currency !== F.cur && S.tx.some(t => t.cardId === c.id || t.toId === c.id))
@@ -1753,6 +1773,23 @@ try {
     else App.exitApp();
   });
 } catch (e) {}
+
+/* Mantiene la barra inferior pegada al borde real, aunque Android cambie
+   el alto visible al hacer scroll (barra de gestos que aparece/desaparece) */
+(function () {
+  const nav = $('.nav');
+  if (!nav || !window.visualViewport) return;
+  let raf;
+  const pin = () => {
+    const vv = window.visualViewport, gap = window.innerHeight - (vv.height + vv.offsetTop);
+    nav.style.transform = gap > 0.5 ? `translateY(-${gap}px)` : '';
+  };
+  const queue = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(pin); };
+  visualViewport.addEventListener('resize', queue);
+  visualViewport.addEventListener('scroll', queue);
+  window.addEventListener('orientationchange', queue);
+  pin();
+})();
 
 /* ====== Inicio ====== */
 save();
