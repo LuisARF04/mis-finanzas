@@ -1,6 +1,6 @@
 {
   "appId": "com.misfinanzas.cup",
-  "appName": "Mis Finanzas",
+  "appName": "Wallet",
   "webDir": "www",
   "android": {
     "backgroundColor": "#14161b"
