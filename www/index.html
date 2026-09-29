@@ -814,7 +814,7 @@ let toastT;
 function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2200); }
 
 /* ====== Navegación ====== */
-const APP_VERSION = '2.8.9';
+const APP_VERSION = '2.9.0';
 
 /* ====== Actualizaciones desde GitHub Releases ====== */
 const GH_REPO = 'LuisARF04/mis-finanzas'; // usuario/repositorio donde se compila el APK
@@ -955,7 +955,7 @@ function vHome() {
   </section>
 
   <div class="sec-head"><h2>Mis cuentas</h2><button class="chip-btn" onclick="selectAllAccounts()">${I.check} Seleccionar todas</button></div>
-  ${S.cards.length ? stack() : `<div class="panel empty">Agrega tu primera tarjeta para empezar.<br><br><button class="btn" onclick="openCardForm()">Agregar tarjeta</button></div>`}
+  ${S.cards.length ? stack() : `<div class="panel empty">Agrega tu primera cuenta para empezar.<br><br><button class="btn" onclick="openCardForm(null,'account')">Agregar cuenta</button></div>`}
 
   <div class="sec-head"><h2>Recientes</h2>${S.tx.length ? `<button class="link" onclick="go('history')">Ver todo</button>` : ''}</div>
   ${recent.length ? `<div>${recent.map(t => txRow(t, true)).join('')}</div>` : `<div class="empty">Aún no hay movimientos. Toca + para registrar uno.</div>`}`;
@@ -976,7 +976,7 @@ function stack() {
     return `<div class="stack-card ${front ? 'front' : ''} ${front && UI.justSel === c.id ? 'pop' : ''}" style="--i:${i};z-index:${i + 1}" onclick="${front ? `openCardDetail('${c.id}')` : `selectCard('${c.id}')`}">
       <div class="sc-row">${brandIcon(c.brand)}
         <div class="sc-id"><div class="sc-name"><i class="cdot" style="background:${accent(c)}"></i><span class="ell">${esc(acctTitle(c))}</span></div><div class="sc-sub">${esc(acctSub(c))}</div></div>
-        <button class="acc-check ${c.included ? 'on' : ''}" onclick="event.stopPropagation();toggleInclude('${c.id}')" aria-label="Incluir en el saldo">${c.included ? I.check : ''}</button>${copyBtn(c)}</div>
+        <button class="acc-check ${c.included ? 'on' : ''}" onclick="event.stopPropagation();toggleInclude('${c.id}')" aria-label="Incluir en el saldo">${c.included ? I.check : ''}</button></div>
       ${front ? `<div class="sc-front">
         <div class="muted">${esc(c.holder || 'Saldo')}</div>
         <div class="sc-bal">${num(bal)}<small>${c.currency}</small></div>
@@ -1293,9 +1293,9 @@ function bigCard(c, clickable) {
   const b = BRANDS[c.brand], bal = cardBal(c);
   return `<div class="bigcard ${clickable ? 'click' : ''}" style="--bc:${b.c}" ${clickable ? `onclick="openCardDetail('${c.id}')"` : ''}>
     <div class="row-between">${badge(c.brand)}<span class="cur-tag">${c.currency}</span></div>
-    <div class="bc-num"><span class="grow">${clickable ? maskNum(c) : fullNum(c)}</span>${copyBtn(c)}</div>
+    <div class="bc-num"><span class="grow">${clickable ? maskNum(c) : fullNum(c)}</span></div>
     <div class="row-between" style="align-items:flex-end">
-      <div style="min-width:0"><div class="muted small">${esc(c.holder || (BRANDS[c.brand].cash ? 'Efectivo' : 'Titular'))}</div><div style="font-weight:600">${esc(c.alias || b.n)}</div></div>
+      <div style="min-width:0"><div class="muted small">${esc(acctSub(c))}</div><div style="font-weight:600">${esc(acctTitle(c))}</div></div>
       <div style="text-align:right"><div style="font-size:22px;font-weight:600">${money(bal, c.currency)}</div>
         ${c.currency !== 'CUP' ? `<div class="muted small">≈ ${money(toCUP(bal, c.currency), 'CUP')}</div>` : ''}</div>
     </div>
@@ -1495,7 +1495,7 @@ function openFab() {
   openSheet('Agregar',
     menuItem(I.down, 'Nuevo ingreso', 'Dinero que entra', "openTx('income')") +
     menuItem(I.up, 'Nuevo gasto', 'Dinero que sale', "openTx('expense')") +
-    menuItem(I.card, 'Nueva tarjeta', 'BPA, BANDEC, VISA, Efectivo y más', 'openCardForm()'));
+    menuItem(I.card, 'Agregar Cuenta Personal', 'BPA, BANDEC, VISA, Efectivo y más', "openCardForm(null,'account')"));
 }
 function openPlus() {
   openSheet('¿Qué quieres hacer?',
@@ -1585,14 +1585,13 @@ function saveTransfer() {
 }
 
 /* --- Tarjeta nueva / editar --- */
-function openCardForm(id) {
+function openCardForm(id, kind) {
   const c = id ? cardById(id) : null;
-  F = { brand: c ? c.brand : 'BPA', cur: c ? c.currency : 'CUP', orig: c ? c.currency : null, edit: id || null, color: c ? accent(c) : nextColor() };
-  openSheet(c ? 'Editar tarjeta' : 'Nueva tarjeta', `
+  F = { brand: c ? c.brand : 'BPA', cur: c ? c.currency : 'CUP', orig: c ? c.currency : null, edit: id || null, color: c ? accent(c) : nextColor(), kind };
+  openSheet(c ? 'Editar tarjeta' : (kind === 'account' ? 'Nueva Cuenta' : 'Nueva tarjeta'), `
     <div class="field"><label>Tipo</label><div class="brand-grid" id="c-brands"></div></div>
     <div class="field"><label>Nombre de la cuenta</label><input id="c-alias" class="inp" maxlength="24" placeholder="Ej: Salario, Ahorro, Caja, Negocio" value="${esc(c ? c.alias : '')}"></div>
     <div class="field"><label>Color</label><div class="swatches" id="c-sw"></div></div>
-    <div class="field" id="c-holderfield"><label>Titular</label><input id="c-holder" class="inp" maxlength="40" value="${esc(c ? c.holder : S.name)}"></div>
     <div class="field" id="c-numfield"><label id="c-numlbl">Número de la tarjeta</label>
       <input id="c-num" class="inp" autocomplete="off" oninput="fmtNumInput()" value="${c && c.number ? esc(BRANDS[c.brand].acct ? c.number : fmtDigits(c.number)) : ''}">
       <div class="hint">${c && !c.number ? 'Escribe el número completo para poder copiarlo desde el inicio. ' : ''}Se guarda solo en este teléfono. Nunca pongas el CVV ni el PIN.</div></div>
@@ -1600,7 +1599,7 @@ function openCardForm(id) {
     <div class="field"><label>Moneda</label><div class="seg seg4" id="c-curs"></div></div>
     <div class="field"><label>Saldo inicial</label><div class="inp-wrap"><input id="c-init" class="inp" inputmode="decimal" placeholder="0.00" value="${c ? c.initial : ''}"><span class="inp-suf" id="c-cursuf"></span></div>
       <div class="hint">${c ? 'Saldo antes de los movimientos registrados.' : 'Lo que tiene la tarjeta ahora mismo.'}</div></div>
-    <button class="btn" onclick="saveCard()">${c ? 'Guardar cambios' : 'Agregar tarjeta'}</button>
+    <button class="btn" onclick="saveCard()">${c ? 'Guardar cambios' : (kind === 'account' ? 'Agregar Cuenta' : 'Agregar tarjeta')}</button>
     ${c ? `<button class="btn danger" style="margin-top:10px" onclick="confirmDelCard('${id}')">Eliminar tarjeta</button>` : ''}`);
   renderBrands(); renderCurs(); renderSw();
 }
@@ -1622,7 +1621,6 @@ function renderBrands() {
     `<button class="brand-opt ${F.brand === k ? 'on' : ''}" onclick="pickBrand('${k}')" aria-label="${BRANDS[k].n}">${badge(k)}</button>`).join('');
   const b = BRANDS[F.brand], inp = $('#c-num');
   $('#c-numfield').style.display = b.cash ? 'none' : '';
-  $('#c-holderfield').style.display = b.cash ? 'none' : '';
   $('#c-phonefield').style.display = TM_BRANDS[F.brand] ? '' : 'none';
   if (b.cash) return;
   $('#c-numlbl').textContent = b.lbl;
@@ -1658,7 +1656,7 @@ function saveCard() {
   if (phone && phone.length !== 8) return toast('El móvil debe tener 8 dígitos (sin +53)');
   const iv = $('#c-init').value.trim(), init = iv === '' ? 0 : parseNum(iv);
   if (isNaN(init)) return toast('El saldo inicial no es un número válido');
-  const data = { brand: F.brand, alias: $('#c-alias').value.trim(), holder: b.cash ? '' : $('#c-holder').value.trim(), number, last4, phone, color: F.color, included: F.edit ? cardById(F.edit).included : true, currency: F.cur, initial: round2(init) };
+  const data = { brand: F.brand, alias: $('#c-alias').value.trim(), number, last4, phone, color: F.color, included: F.edit ? cardById(F.edit).included : true, currency: F.cur, initial: round2(init) };
   if (F.edit) {
     const c = cardById(F.edit);
     if (c.currency !== F.cur && S.tx.some(t => t.cardId === c.id || t.toId === c.id))
@@ -1668,7 +1666,7 @@ function saveCard() {
     const c = Object.assign({ id: uid(), created: new Date().toISOString() }, data);
     S.cards.push(c); UI.sel = c.id;
   }
-  save(); closeSheet(); render(); toast(F.edit ? 'Cambios guardados' : 'Tarjeta agregada');
+  save(); closeSheet(); render(); toast(F.edit ? 'Cambios guardados' : (F.kind === 'account' ? 'Cuenta agregada' : 'Tarjeta agregada'));
 }
 
 /* --- Detalle de tarjeta --- */
