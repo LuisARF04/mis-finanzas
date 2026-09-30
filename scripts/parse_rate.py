@@ -17,7 +17,7 @@ text = re.sub(r'<[^>]+>', ' ', zone)
 text = re.sub(r'\s+', ' ', text)
 
 def find_rate(code):
-    m = re.search(r'1\s*' + code + r'.{0,80}?([0-9]+(?:[.,][0-9]+)?)\s*CUP', text)
+    m = re.search(r'1\s*' + code + r'.{0,150}?([0-9]+(?:[.,][0-9]+)?)\s*CUP', text)
     return float(m.group(1).replace(',', '.')) if m else None
 
 usd = find_rate('USD')
