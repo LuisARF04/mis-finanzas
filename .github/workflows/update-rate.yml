@@ -14,16 +14,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # USD y MLC: lee la página pública de El Toque, la misma que
-      # abrirías en el navegador. No hace falta ninguna cuenta ni token.
+      # USD y MLC: lee la página pública de El Toque. Algunos sitios bloquean
+      # las peticiones que vienen directo de un servidor de GitHub (código 403),
+      # así que primero se intenta a través de un lector (r.jina.ai), y si eso
+      # falla, se intenta directo como respaldo.
       - name: Leer USD y MLC de El Toque
         run: |
-          http_code=$(curl -sL -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" \
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
+          URL="https://eltoque.com/tasas-de-cambio-cuba/mercado-informal"
+
+          http_code=$(curl -sL --retry 2 --retry-delay 3 --max-time 30 -A "$UA" \
             -o /tmp/page.html -w "%{http_code}" \
-            https://eltoque.com/tasas-de-cambio-cuba/mercado-informal)
-          echo "Codigo de respuesta: $http_code"
+            "https://r.jina.ai/$URL")
+          echo "Codigo via r.jina.ai: $http_code"
+
           if [ "$http_code" != "200" ]; then
-            echo "La pagina no respondio con exito (codigo $http_code)."
+            echo "r.jina.ai no respondio bien, se intenta directo..."
+            http_code=$(curl -sL --retry 2 --retry-delay 3 --max-time 30 -A "$UA" \
+              -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" \
+              -H "Accept-Language: es-ES,es;q=0.9,en;q=0.8" \
+              -o /tmp/page.html -w "%{http_code}" \
+              "$URL")
+            echo "Codigo directo: $http_code"
+          fi
+
+          if [ "$http_code" != "200" ]; then
+            echo "Ninguna de las dos formas funciono (codigo final $http_code)."
             exit 1
           fi
           python3 scripts/parse_rate.py
