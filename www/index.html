@@ -16,9 +16,9 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{min-height:100%}
-html{touch-action:manipulation}
+html{touch-action:manipulation;background:var(--bg);overscroll-behavior:none}
 body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(120% 50% at 50% 0%,#202632 0%,var(--bg) 70%)}
-body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;-webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
 button,input,select{font:inherit;color:inherit}
 button{background:none;border:0;cursor:pointer}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -61,7 +61,7 @@ svg{display:block}
 
 /* Pila de tarjetas (como la foto) */
 .stack{display:flex;flex-direction:column}
-.stack-card{position:relative;border-radius:24px;padding:16px 18px 32px;margin-top:-18px;background:hsl(220 13% calc(17% + var(--i) * 3.5%));border:1px solid var(--line);box-shadow:0 -8px 18px rgba(0,0,0,.28);cursor:pointer}
+.stack-card{--base:hsl(220 13% calc(17% + var(--i) * 3.5%));position:relative;overflow:hidden;border-radius:24px;padding:16px 18px 32px;margin-top:-18px;background:linear-gradient(135deg,color-mix(in srgb,var(--bc) 30%,var(--base)) 0%,var(--base) 65%);border:1px solid var(--line);box-shadow:0 -8px 18px rgba(0,0,0,.28);cursor:pointer}
 .stack-card:first-child{margin-top:0}
 .stack-card.front{padding-bottom:20px}
 .sc-row{display:flex;align-items:center;gap:12px}
@@ -234,6 +234,7 @@ input[type=datetime-local].inp{color-scheme:dark}
 .set-row{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
 .set-row:last-child{border-bottom:0}
 .rate-inp{width:140px;text-align:right}
+.rate-view{background:var(--surface2);border-radius:14px;padding:13px 14px;font-weight:600;min-width:140px;text-align:right}
 .switch{width:52px;height:30px;border-radius:999px;background:var(--surface3);position:relative;transition:background .15s;flex-shrink:0}
 .switch::after{content:'';position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .15s}
 .switch.on{background:var(--accent)}
@@ -269,7 +270,7 @@ input[type=datetime-local].inp{color-scheme:dark}
 .cg-inner{overflow:hidden;min-height:0;visibility:hidden;transition:visibility 0s .24s}
 .cgroup.open .cg-inner{visibility:visible;transition-delay:0s}
 .cg-pad{padding:2px 12px 12px;display:flex;flex-direction:column;gap:10px}
-.pcard{--bc:#888;position:relative;display:flex;align-items:center;gap:12px;padding:14px;border-radius:20px;background:var(--surface2);background:linear-gradient(135deg,color-mix(in srgb,var(--bc) 20%,var(--surface2)),var(--surface2) 75%);border:1px solid var(--line);cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .1s}
+.pcard{--bc:#888;position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;padding:14px;border-radius:20px;background:var(--surface2);background:linear-gradient(135deg,color-mix(in srgb,var(--bc) 20%,var(--surface2)),var(--surface2) 75%);border:1px solid var(--line);cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .1s}
 .pcard:active{transform:scale(.985)}
 .pcard .bicon{width:42px;height:42px;border-radius:13px}
 .pcard .bicon svg{width:22px;height:22px}
@@ -369,14 +370,14 @@ const BRAND_IMG = {
 const IMG_WIDE = { VISA: true };   // logo horizontal
 const IMG_FULL = { QVAPAY: true }; // ícono que ya trae su fondo
 const BRANDS = {
-  BPA:      { n: 'BPA',      c: '#2dd4bf', ic: 'bank',  curs: ['CUP', 'MLC'], lbl: 'Número de la tarjeta' },
-  BANDEC:   { n: 'BANDEC',   c: '#ff9f43', ic: 'bank',  curs: ['CUP', 'MLC'], lbl: 'Número de la tarjeta' },
+  BPA:      { n: 'BPA',      c: '#1de6ed', ic: 'bank',  curs: ['CUP', 'MLC'], lbl: 'Número de la tarjeta' },
+  BANDEC:   { n: 'BANDEC',   c: '#cc2949', ic: 'bank',  curs: ['CUP', 'MLC'], lbl: 'Número de la tarjeta' },
   VISA:     { n: 'VISA',     c: '#8b7bff', ic: 'card',  curs: ['USD'],        lbl: 'Número de la tarjeta' },
   PAYPAL:   { n: 'PayPal',   c: '#ff6b9a', ic: 'send',  curs: ['USD'],        lbl: 'Correo de PayPal', acct: true, ph: 'tucorreo@gmail.com' },
   QVAPAY:   { n: 'QvaPay',   c: '#6c5ce7', ic: 'coins', curs: ['SQP'],        lbl: 'Usuario o correo de QvaPay', acct: true, ph: 'tu_usuario' },
   EFECTIVO: { n: 'Efectivo', c: '#4ade80', ic: 'cash',  curs: ['CUP', 'USD'], cash: true },
-  CLASICA:  { n: 'Clásica',  c: '#38bdf8', ic: 'card',  curs: ['USD'],        lbl: 'Número de la tarjeta' },
-  TROPICAL: { n: 'Tropical', c: '#fb923c', ic: 'card',  curs: ['USD'],        lbl: 'Número de la tarjeta' }
+  CLASICA:  { n: 'Clásica',  c: '#75a5bd', ic: 'card',  curs: ['USD'],        lbl: 'Número de la tarjeta' },
+  TROPICAL: { n: 'Tropical', c: '#47b3e1', ic: 'card',  curs: ['USD'],        lbl: 'Número de la tarjeta' }
 };
 const CURS = ['CUP', 'USD', 'SQP', 'MLC'];
 
@@ -618,7 +619,7 @@ const QR = (() => {
 const PALETTE = ['#ff8a5b', '#6fb6ff', '#c77dff', '#4dd4ac', '#ffc542', '#ff6b9a', '#8b7bff'];
 /* ====== Datos (se guardan en el teléfono) ====== */
 function defaults() {
-  return { v: 10, name: '', photo: '', onboarded: false, rates: { USD: 400, SQP: 420, MLC: 300 }, cards: [], contacts: [], tx: [], hide: false, anim: true, counter: { cur: 'CUP', counts: {} } };
+  return { v: 11, name: '', photo: '', onboarded: false, rates: { USD: 400, SQP: 420, MLC: 300 }, eltoqueToken: '', cards: [], contacts: [], tx: [], hide: false, anim: true, counter: { cur: 'CUP', counts: {} } };
 }
 // Versión 1 → 2: las tarjetas USDT pasan a tener su propia moneda
 function migrate(d) {
@@ -674,6 +675,8 @@ function migrate(d) {
   if (d.v < 9) { if (!d.counter) d.counter = { cur: 'CUP', counts: {} }; d.v = 9; }
   // Versión 9 → 10: casilla para incluir la cuenta en el Saldo del inicio
   if (d.v < 10) { d.cards.forEach(c => { if (c.included === undefined) c.included = true; }); d.v = 10; }
+  // Versión 10 → 11: token opcional para actualizar la tasa de El Toque
+  if (d.v < 11) { if (d.eltoqueToken === undefined) d.eltoqueToken = ''; d.v = 11; }
   return d;
 }
 let memStore = null;
@@ -814,7 +817,7 @@ let toastT;
 function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2200); }
 
 /* ====== Navegación ====== */
-const APP_VERSION = '2.9.0';
+const APP_VERSION = '2.9.9';
 
 /* ====== Actualizaciones desde GitHub Releases ====== */
 const GH_REPO = 'LuisARF04/mis-finanzas'; // usuario/repositorio donde se compila el APK
@@ -973,7 +976,7 @@ function stack() {
   const order = S.cards.filter(c => c.id !== UI.sel).concat(cardById(UI.sel));
   return `<div class="stack">${order.map((c, i) => {
     const front = i === order.length - 1, bal = cardBal(c);
-    return `<div class="stack-card ${front ? 'front' : ''} ${front && UI.justSel === c.id ? 'pop' : ''}" style="--i:${i};z-index:${i + 1}" onclick="${front ? `openCardDetail('${c.id}')` : `selectCard('${c.id}')`}">
+    return `<div class="stack-card ${front ? 'front' : ''} ${front && UI.justSel === c.id ? 'pop' : ''}" style="--i:${i};--bc:${BRANDS[c.brand].c};z-index:${i + 1}" onclick="${front ? `openCardDetail('${c.id}')` : `selectCard('${c.id}')`}">
       <div class="sc-row">${brandIcon(c.brand)}
         <div class="sc-id"><div class="sc-name"><i class="cdot" style="background:${accent(c)}"></i><span class="ell">${esc(acctTitle(c))}</span></div><div class="sc-sub">${esc(acctSub(c))}</div></div>
         <button class="acc-check ${c.included ? 'on' : ''}" onclick="event.stopPropagation();toggleInclude('${c.id}')" aria-label="Incluir en el saldo">${c.included ? I.check : ''}</button></div>
@@ -1372,7 +1375,7 @@ function cardBars() {
 /* ====== Pantalla: Ajustes ====== */
 
 /* ====== Contador de billetes ====== */
-const COUNTER_DENOMS = { CUP: [1, 3, 5, 10, 20, 50, 100, 200, 500, 1000], USD: [1, 5, 10, 20, 50, 100] };
+const COUNTER_DENOMS = { CUP: [1, 3, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000], USD: [1, 5, 10, 20, 50, 100] };
 function counterCounts(cur) { return S.counter.counts[cur] || (S.counter.counts[cur] = {}); }
 function counterTotal(cur) { const c = counterCounts(cur); return COUNTER_DENOMS[cur].reduce((s, d) => s + d * (c[d] || 0), 0); }
 function vCounter() {
@@ -1448,11 +1451,11 @@ function vSettings() {
   <div class="set-title">Tasa de cambio</div>
   <div class="set-group">
     <div class="set-row"><div class="grow"><div>1 USD</div><div class="muted small">Efectivo, VISA, PayPal, Clásica, Tropical</div></div>
-      <div class="inp-wrap"><input class="inp rate-inp" inputmode="decimal" value="${S.rates.USD}" onchange="setRate('USD',this)"><span class="inp-suf">CUP</span></div></div>
-    <div class="set-row"><div class="grow"><div>1 SQP</div><div class="muted small">Saldo en QvaPay</div></div>
-      <div class="inp-wrap"><input class="inp rate-inp" inputmode="decimal" value="${S.rates.SQP}" onchange="setRate('SQP',this)"><span class="inp-suf">CUP</span></div></div>
+      <div class="rate-view">${nf.format(S.rates.USD)} <span class="muted">CUP</span></div></div>
     <div class="set-row"><div class="grow"><div>1 MLC</div></div>
-      <div class="inp-wrap"><input class="inp rate-inp" inputmode="decimal" value="${S.rates.MLC}" onchange="setRate('MLC',this)"><span class="inp-suf">CUP</span></div></div>
+      <div class="rate-view">${nf.format(S.rates.MLC)} <span class="muted">CUP</span></div></div>
+    <div class="set-row"><div class="grow"><div>1 SQP</div><div class="muted small">Saldo en QvaPay</div></div>
+      <div class="rate-view">${nf.format(S.rates.SQP)} <span class="muted">CUP</span></div></div>
   </div>
   <p class="muted small" style="margin:0 4px">La moneda principal es CUP. Los saldos en USD, SQP y MLC se convierten con estas tasas.</p>
 
@@ -1469,12 +1472,6 @@ function vSettings() {
   <button class="btn danger" onclick="confirmReset()">Borrar todos los datos</button>
 `;
 }
-function setRate(c, el) {
-  const v = parseNum(el.value);
-  if (!(v > 0)) { toast('Escribe una tasa mayor que 0'); el.value = S.rates[c]; return; }
-  S.rates[c] = v; save(); toast('Tasa actualizada');
-}
-
 /* ====== Hojas (ventanas inferiores) ====== */
 function openSheet(title, body) {
   const swap = sheetOpen() ? 'swap' : '';
@@ -1706,20 +1703,29 @@ function openTxDetail(id) {
     <button class="btn danger" onclick="confirmDelTx('${id}')">Eliminar movimiento</button>`);
 }
 
-/* --- Tasa rápida --- */
-function openRate() {
-  openSheet('Tasa de cambio', `
-    <div class="field"><label>1 USD =</label><div class="inp-wrap"><input id="r-usd" class="inp" inputmode="decimal" value="${S.rates.USD}"><span class="inp-suf">CUP</span></div></div>
-    <div class="field"><label>1 SQP =</label><div class="inp-wrap"><input id="r-usdt" class="inp" inputmode="decimal" value="${S.rates.SQP}"><span class="inp-suf">CUP</span></div></div>
-    <div class="field"><label>1 MLC =</label><div class="inp-wrap"><input id="r-mlc" class="inp" inputmode="decimal" value="${S.rates.MLC}"><span class="inp-suf">CUP</span></div></div>
-    <button class="btn" onclick="saveRates()">Guardar tasa</button>`);
+// Trae la tasa "de la calle" desde un archivo público que un robot de GitHub
+// actualiza cada hora (con un token que tú guardas en secreto, no la app).
+async function fetchStreetRate() {
+  const r = await fetch(`https://raw.githubusercontent.com/${GH_REPO}/main/rates.json?t=${Date.now()}`, { cache: 'no-store' });
+  if (!r.ok) throw new Error('http-' + r.status);
+  const data = await r.json();
+  if (!data.usd || !isFinite(+data.usd)) throw new Error('formato');
+  return data;
 }
-function saveRates() {
-  const u = parseNum($('#r-usd').value), ut = parseNum($('#r-usdt').value), m = parseNum($('#r-mlc').value);
-  if (!(u > 0) || !(ut > 0) || !(m > 0)) return toast('Las tasas deben ser mayores que 0');
-  S.rates.USD = u; S.rates.SQP = ut; S.rates.MLC = m; save(); closeSheet(); render(); toast('Tasa actualizada');
+async function updateStreetRate(silent) {
+  const btn = $('#eltoque-btn');
+  if (btn) { btn.dataset.orig = btn.dataset.orig ?? btn.innerHTML; btn.innerHTML = 'Buscando…'; btn.disabled = true; }
+  try {
+    const data = await fetchStreetRate();
+    S.rates.USD = +data.usd; if (data.mlc) S.rates.MLC = +data.mlc; if (data.sqp) S.rates.SQP = +data.sqp;
+    save();
+    if (!silent) { render(); toast('Tasa actualizada: 1 USD = ' + nf.format(S.rates.USD) + ' CUP'); }
+  } catch (e) {
+    if (!silent) toast('No se pudo traer la tasa todavía. Intenta más tarde.');
+  } finally {
+    if (btn) { btn.innerHTML = btn.dataset.orig; btn.disabled = false; }
+  }
 }
-
 /* --- Confirmaciones --- */
 function confirmBox(msg, okText, fn) {
   F.confirm = fn;
@@ -1795,6 +1801,7 @@ applyAnim();
 render();
 if (!S.onboarded) setTimeout(onboard, 300);
 setTimeout(() => checkUpdate(true), 2500);
+setTimeout(() => updateStreetRate(true), 3200);
 </script>
 </body>
 </html>
