@@ -1,32 +1,31 @@
 import re
 import json
 from datetime import datetime, timezone
-import sys
 
-html = open('/tmp/page.html', encoding='utf-8', errors='ignore').read()
+html = open('/tmp/eltoque_telegram.html', encoding='utf-8', errors='ignore').read()
 
-# Nos quedamos solo con la parte de la página que sigue a "Tiempo Real",
-# que es donde empieza la tabla con los valores de hoy (así evitamos
-# que alguna otra mención suelta de "USD" en el resto de la página confunda la búsqueda).
-marker = html.find('Tiempo Real')
-zone = html[marker:marker + 6000] if marker != -1 else html
-
-# Quitamos las etiquetas HTML y dejamos texto plano y espacios simples,
-# por ejemplo: "1 USD Dólar Estadounidense 750.00 CUP+5 1 EUR Euro 850.00 CUP+2.5 ..."
-text = re.sub(r'<[^>]+>', ' ', zone)
+# Quitamos las etiquetas HTML y dejamos texto plano y espacios simples.
+text = re.sub(r'<[^>]+>', ' ', html)
 text = re.sub(r'\s+', ' ', text)
 
+# El canal de El Toque publica mensajes como:
+#   "Actualización de tasas de mercado informal de divisas en Cuba
+#    Fecha: 02/08/2026
+#    USD: 675.00 CUP
+#    MLC: 467.00 CUP"
+# Los mensajes van de más viejo a más nuevo, así que nos quedamos
+# con la ÚLTIMA coincidencia de cada una (la más reciente).
 def find_rate(code):
-    m = re.search(r'1\s*' + code + r'.{0,150}?([0-9]+(?:[.,][0-9]+)?)\s*CUP', text)
-    return float(m.group(1).replace(',', '.')) if m else None
+    matches = re.findall(code + r':\s*([0-9]+(?:[.,][0-9]+)?)\s*CUP', text)
+    return float(matches[-1].replace(',', '.')) if matches else None
 
 usd = find_rate('USD')
 mlc = find_rate('MLC')
 
 if not usd:
-    print("No se encontró la tasa de USD en la página. Fragmento analizado:", file=sys.stderr)
-    print(text[:1000], file=sys.stderr)
-    sys.exit(1)
+    print("No se encontró ninguna tasa de USD en el canal de Telegram. Fragmento final analizado:")
+    print(text[-1500:])
+    raise SystemExit(1)
 
 out = {
     "usd": usd,
