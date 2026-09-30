@@ -1,0 +1,53 @@
+name: Actualizar tasa de El Toque y QvaPay
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # cada hora, en punto (hora UTC)
+  workflow_dispatch:        # y también se puede correr a mano desde la pestaña Actions
+
+permissions:
+  contents: write
+
+jobs:
+  update-rate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # USD y MLC: lee la página pública de El Toque, la misma que
+      # abrirías en el navegador. No hace falta ninguna cuenta ni token.
+      - name: Leer USD y MLC de El Toque
+        run: |
+          http_code=$(curl -sL -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" \
+            -o /tmp/page.html -w "%{http_code}" \
+            https://eltoque.com/tasas-de-cambio-cuba/mercado-informal)
+          echo "Codigo de respuesta: $http_code"
+          if [ "$http_code" != "200" ]; then
+            echo "La pagina no respondio con exito (codigo $http_code)."
+            exit 1
+          fi
+          python3 scripts/parse_rate.py
+
+      # SQP: lee el canal público de Telegram de QvaPay, donde publican
+      # sus propias tasas P2P (cambiocup.com no se puede leer directo
+      # porque arma sus números con JavaScript).
+      - name: Leer SQP del canal de Telegram de QvaPay
+        continue-on-error: true   # si esto falla, que no tumbe la tasa de USD/MLC que ya se guardó
+        run: |
+          http_code=$(curl -sL -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" \
+            -o /tmp/telegram.html -w "%{http_code}" \
+            https://t.me/s/QvaPay_com)
+          echo "Codigo de respuesta: $http_code"
+          if [ "$http_code" != "200" ]; then
+            echo "Telegram no respondio con exito (codigo $http_code)."
+            exit 1
+          fi
+          python3 scripts/parse_sqp.py
+
+      - name: Guardar el resultado en el repositorio
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add rates.json
+          git diff --quiet --cached && echo "Sin cambios en la tasa" || git commit -m "Actualizar tasas (El Toque / QvaPay)"
+          git push
