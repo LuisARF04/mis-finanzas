@@ -55,13 +55,17 @@ svg{display:block}
 .eye svg{width:20px;height:20px}
 .delta{font-size:14px;margin-top:4px}
 .pos{color:var(--pos)}.neg{color:var(--neg)}
-.sec-head{display:flex;justify-content:space-between;align-items:center;margin:28px 0 14px}
-.sec-head h2{font-size:24px;font-weight:600}
+.sec-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:28px 0 14px}
+.sec-head h2{font-size:22px;font-weight:600;white-space:nowrap}
+.sec-head .chip-btn,.sec-head .link{flex-shrink:0}
+@media (max-width:359px){.sec-head h2{font-size:19px}.sec-head .chip-btn{padding:6px 10px;font-size:12px}}
+@media (max-width:339px){.sec-head .chip-btn svg{display:none}}
+@media (max-width:319px){.sec-head h2{font-size:17px}.sec-head .chip-btn{font-size:11px;padding:6px 8px}}
 .link{color:var(--accent);font-size:14px;font-weight:600}
 
 /* Pila de tarjetas (como la foto) */
 .stack{display:flex;flex-direction:column}
-.stack-card{--base:hsl(220 13% calc(17% + var(--i) * 3.5%));position:relative;overflow:hidden;border-radius:24px;padding:16px 18px 32px;margin-top:-18px;background:linear-gradient(135deg,color-mix(in srgb,var(--bc) 30%,var(--base)) 0%,var(--base) 65%);border:1px solid var(--line);box-shadow:0 -8px 18px rgba(0,0,0,.28);cursor:pointer}
+.stack-card{--base:hsl(220 13% calc(17% + var(--i) * 3.5%));position:relative;overflow:hidden;border-radius:24px;padding:16px 18px 32px;margin-top:-18px;background:linear-gradient(135deg,color-mix(in srgb,var(--bc) 30%,var(--base)) 0%,var(--base) 65%);background-origin:border-box;background-repeat:no-repeat;border:1px solid var(--line);box-shadow:0 -8px 18px rgba(0,0,0,.28);cursor:pointer}
 .stack-card:first-child{margin-top:0}
 .stack-card.front{padding-bottom:20px}
 .sc-row{display:flex;align-items:center;gap:12px}
@@ -107,7 +111,7 @@ svg{display:block}
 .brand-opt .bname{font-size:12px}
 
 /* Tarjetas grandes */
-.bigcard{--bc:#888;border-radius:26px;padding:18px;margin-bottom:14px;background:linear-gradient(135deg,color-mix(in srgb,var(--bc) 28%,var(--surface)) 0%,var(--surface) 72%);border:1px solid var(--line);position:relative;overflow:hidden;min-height:176px;display:flex;flex-direction:column;justify-content:space-between}
+.bigcard{--bc:#888;border-radius:26px;padding:18px;margin-bottom:14px;background:linear-gradient(135deg,color-mix(in srgb,var(--bc) 28%,var(--surface)) 0%,var(--surface) 72%);background-origin:border-box;background-repeat:no-repeat;border:1px solid var(--line);position:relative;overflow:hidden;min-height:176px;display:flex;flex-direction:column;justify-content:space-between}
 .bigcard.click{cursor:pointer}
 .bigcard::after{content:'';position:absolute;right:-50px;top:-50px;width:170px;height:170px;border-radius:50%;background:rgba(255,255,255,.04);pointer-events:none}
 .bc-num{font-size:18px;letter-spacing:1.5px;margin:18px 0 12px;display:flex;align-items:center;gap:10px;position:relative;z-index:1;word-break:break-all}
@@ -270,7 +274,7 @@ input[type=datetime-local].inp{color-scheme:dark}
 .cg-inner{overflow:hidden;min-height:0;visibility:hidden;transition:visibility 0s .24s}
 .cgroup.open .cg-inner{visibility:visible;transition-delay:0s}
 .cg-pad{padding:2px 12px 12px;display:flex;flex-direction:column;gap:10px}
-.pcard{--bc:#888;position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;padding:14px;border-radius:20px;background:var(--surface2);background:linear-gradient(135deg,color-mix(in srgb,var(--bc) 20%,var(--surface2)),var(--surface2) 75%);border:1px solid var(--line);cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .1s}
+.pcard{--bc:#888;position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;padding:14px;border-radius:20px;background:var(--surface2);background:linear-gradient(135deg,color-mix(in srgb,var(--bc) 20%,var(--surface2)),var(--surface2) 75%);background-origin:border-box;background-repeat:no-repeat;border:1px solid var(--line);cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .1s}
 .pcard:active{transform:scale(.985)}
 .pcard .bicon{width:42px;height:42px;border-radius:13px}
 .pcard .bicon svg{width:22px;height:22px}
@@ -619,7 +623,7 @@ const QR = (() => {
 const PALETTE = ['#ff8a5b', '#6fb6ff', '#c77dff', '#4dd4ac', '#ffc542', '#ff6b9a', '#8b7bff'];
 /* ====== Datos (se guardan en el teléfono) ====== */
 function defaults() {
-  return { v: 11, name: '', photo: '', onboarded: false, rates: { USD: 400, SQP: 420, MLC: 300 }, eltoqueToken: '', cards: [], contacts: [], tx: [], hide: false, anim: true, counter: { cur: 'CUP', counts: {} } };
+  return { v: 12, name: '', photo: '', phone: '', onboarded: false, rates: { USD: 400, SQP: 420, MLC: 300 }, eltoqueToken: '', cards: [], contacts: [], tx: [], hide: false, anim: true, counter: { cur: 'CUP', counts: {} } };
 }
 // Versión 1 → 2: las tarjetas USDT pasan a tener su propia moneda
 function migrate(d) {
@@ -677,6 +681,8 @@ function migrate(d) {
   if (d.v < 10) { d.cards.forEach(c => { if (c.included === undefined) c.included = true; }); d.v = 10; }
   // Versión 10 → 11: token opcional para actualizar la tasa de El Toque
   if (d.v < 11) { if (d.eltoqueToken === undefined) d.eltoqueToken = ''; d.v = 11; }
+  // Versión 11 → 12: mi móvil (va dentro del QR de mis tarjetas)
+  if (d.v < 12) { if (!d.phone) d.phone = (d.cards.find(c => c.phone) || {}).phone || ''; d.v = 12; }
   return d;
 }
 let memStore = null;
@@ -817,7 +823,7 @@ let toastT;
 function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2200); }
 
 /* ====== Navegación ====== */
-const APP_VERSION = '2.9.9';
+const APP_VERSION = '2.9.9.1';
 
 /* ====== Actualizaciones desde GitHub Releases ====== */
 const GH_REPO = 'LuisARF04/mis-finanzas'; // usuario/repositorio donde se compila el APK
@@ -957,7 +963,7 @@ function vHome() {
     </div>` : ''}
   </section>
 
-  <div class="sec-head"><h2>Mis cuentas</h2><button class="chip-btn" onclick="selectAllAccounts()">${I.check} Seleccionar todas</button></div>
+  <div class="sec-head"><h2>Mis Cuentas</h2><button class="chip-btn" onclick="selectAllAccounts()">${I.check} Seleccionar todas</button></div>
   ${S.cards.length ? stack() : `<div class="panel empty">Agrega tu primera cuenta para empezar.<br><br><button class="btn" onclick="openCardForm(null,'account')">Agregar cuenta</button></div>`}
 
   <div class="sec-head"><h2>Recientes</h2>${S.tx.length ? `<button class="link" onclick="go('history')">Ver todo</button>` : ''}</div>
@@ -972,8 +978,11 @@ function acctSub(c) {
   return `${b.n}${b.acct ? '' : ' ••' + c.last4} · ${c.currency}`;
 }
 function stack() {
-  if (!cardById(UI.sel)) UI.sel = S.cards[0].id;
-  const order = S.cards.filter(c => c.id !== UI.sel).concat(cardById(UI.sel));
+  // Solo se muestran las cuentas con saldo (las que están en cero se ocultan)
+  const vis = S.cards.filter(c => round2(cardBal(c)) !== 0);
+  if (!vis.length) return `<div class="empty">Ninguna de tus cuentas tiene saldo ahora mismo.</div>`;
+  if (!vis.some(c => c.id === UI.sel)) UI.sel = vis[0].id;
+  const order = vis.filter(c => c.id !== UI.sel).concat(cardById(UI.sel));
   return `<div class="stack">${order.map((c, i) => {
     const front = i === order.length - 1, bal = cardBal(c);
     return `<div class="stack-card ${front ? 'front' : ''} ${front && UI.justSel === c.id ? 'pop' : ''}" style="--i:${i};--bc:${BRANDS[c.brand].c};z-index:${i + 1}" onclick="${front ? `openCardDetail('${c.id}')` : `selectCard('${c.id}')`}">
@@ -990,6 +999,13 @@ function stack() {
 }
 function selectCard(id) { UI.sel = id; UI.justSel = id; render(); }
 function toggleInclude(id) { const c = cardById(id); if (!c) return; c.included = !c.included; save(); render(); }
+function setMyPhone(el) {
+  const raw = el.value.trim();
+  if (!raw) { S.phone = ''; save(); return toast('Móvil quitado'); }
+  const p = normPhone(raw);
+  if (!p) { el.value = S.phone; return toast('El móvil debe tener 8 dígitos (sin +53)'); }
+  S.phone = p; el.value = p; save(); toast('Móvil guardado');
+}
 function selectAllAccounts() { S.cards.forEach(c => c.included = true); save(); render(); toast('Todas las cuentas seleccionadas'); }
 function avatarInner() { return S.photo ? `<img src="${S.photo}" alt="">` : esc(initials()); }
 // Foto de perfil: recorte cuadrado al centro, 256 px
@@ -1079,9 +1095,16 @@ const ctInitials = n => { const p = n.trim().split(/\s+/); return ((p[0] || '?')
 const K_BRANDS = ['BPA', 'BANDEC', 'VISA', 'PAYPAL', 'QVAPAY', 'CLASICA', 'TROPICAL'];
 // Tarjetas cubanas: su QR usa el formato de Transfermóvil (Transferencia → escanear)
 const TM_BRANDS = { BPA: 1, BANDEC: 1, CLASICA: 1, TROPICAL: 1 };
-const qrText = k => TM_BRANDS[k.brand] ? `TRANSFERMOVIL_ETECSA,TRANSFERENCIA,${k.number},${k.phone || ''},` : k.number;
+const qrText = (k, phone) => TM_BRANDS[k.brand] ? `TRANSFERMOVIL_ETECSA,TRANSFERENCIA,${k.number},${phone || ''},` : k.number;
+// Deja solo los 8 dígitos del móvil (quita +53, espacios, guiones...). Vacío si no es válido.
+function normPhone(raw) {
+  let d = String(raw || '').replace(/\D/g, '');
+  if (d.startsWith('0053')) d = d.slice(4);
+  else if (d.startsWith('53') && d.length === 10) d = d.slice(2);
+  return d.length === 8 ? d : '';
+}
 function fmtPhone(el) { let d = el.value.replace(/\D/g, ''); if (d.length > 8 && d.startsWith('53')) d = d.slice(2); el.value = d.slice(0, 8); }
-const phoneField = (id, v) => `<div class="field" id="${id}field"><label>Móvil asociado (opcional)</label><input id="${id}" class="inp" inputmode="numeric" maxlength="12" placeholder="5XXXXXXX" autocomplete="off" value="${esc(v || '')}" oninput="fmtPhone(this)"><div class="hint">El móvil de Transfermóvil, 8 dígitos sin +53. Va dentro del QR.</div></div>`;
+const phoneField = (id, v) => `<div class="field" id="${id}field"><label>Móvil asociado (opcional)</label><input id="${id}" class="inp" inputmode="numeric" maxlength="20" placeholder="5XXXXXXX" autocomplete="off" value="${esc(v || '')}" oninput="fmtPhone(this)"><div class="hint">El móvil de Transfermóvil, 8 dígitos sin +53. Va dentro del QR.</div></div>`;
 
 function vCards() {
   return `
@@ -1177,7 +1200,8 @@ function editTile(el) {
 /* --- Menú + de Tarjetas --- */
 function openCtMenu() {
   openSheet('Agregar',
-    menuItem(I.userPlus, 'Nuevo contacto', 'Una persona y sus tarjetas', 'openContactForm()') +
+    menuItem(I.userPlus, 'Importar de mis contactos', 'Nombre, móvil y foto del teléfono', 'importContactNew()') +
+    menuItem(I.userPlus, 'Nuevo contacto', 'Escribirlo a mano', 'openContactForm()') +
     menuItem(I.card, 'Tarjeta mía', 'BPA, BANDEC, VISA, Efectivo y más', 'openCardForm()'));
 }
 /* --- Contacto --- */
@@ -1209,15 +1233,46 @@ function updCtAv() {
   $('#ct-avi').innerHTML = F.ctPhoto ? `<img src="${F.ctPhoto}" alt="">` : esc(nm ? ctInitials(nm) : '+');
   $('#ct-rm').style.display = F.ctPhoto ? '' : 'none';
 }
-function openContactForm(id) {
-  const c = id ? ctById(id) : null; F = { ctEdit: id || null, ctPhoto: c ? (c.photo || '') : '' };
+// Importar un contacto del teléfono con el selector nativo de Wallet (el WebView de Android no trae el de Chrome)
+async function pickPhoneContact() {
+  const cap = window.Capacitor;
+  const P = cap && ((cap.Plugins && cap.Plugins.ContactPicker) || (cap.registerPlugin && cap.registerPlugin('ContactPicker')));
+  if (!P || !P.pick) { toast('Importar contactos no está disponible en esta instalación'); return null; }
+  try {
+    const r = await P.pick();
+    const p = normPhone(r.phone), phone = p && p[0] === '5' ? p : '';
+    if (r.phone && !phone) toast('Ese número no parece un móvil cubano de 8 dígitos');
+    return { name: String(r.name || '').trim().slice(0, 40), phone, photo: r.photo ? 'data:image/jpeg;base64,' + r.photo : '' };
+  } catch (e) {
+    const m = String((e && (e.message || e.code)) || e);
+    if (m === 'cancelled') return null;
+    if (m === 'permission_denied') toast('Sin permiso para ver tus contactos. Puedes escribir los datos a mano.');
+    else if (/UNIMPLEMENTED|not implemented/i.test(m)) toast('Importar contactos no está disponible en esta instalación');
+    else toast('No se pudo importar el contacto');
+    return null;
+  }
+}
+async function importContactNew() { const r = await pickPhoneContact(); if (r) openContactForm(null, r); }
+async function importIntoForm() {
+  const r = await pickPhoneContact(); if (!r) return;
+  if (r.name) $('#ct-name').value = r.name;
+  if (r.phone) $('#ct-phone').value = r.phone;
+  if (r.photo) F.ctPhoto = r.photo;
+  updCtAv();
+}
+function openContactForm(id, pre) {
+  const c = id ? ctById(id) : null; pre = pre || {};
+  F = { ctEdit: id || null, ctPhoto: pre.photo !== undefined ? pre.photo : (c ? (c.photo || '') : '') };
+  const nameV = pre.name !== undefined ? pre.name : (c ? c.name : ''), phoneV = pre.phone !== undefined ? pre.phone : (c ? (c.phone || '') : '');
   openSheet(c ? 'Editar contacto' : 'Nuevo contacto', `
     <div class="ct-photo">
       <label class="cavatar big" id="ct-av"><span id="ct-avi"></span><input type="file" accept="image/*" hidden onchange="pickCtPhoto(this)"></label>
       <div class="grow"><div style="font-weight:600">Foto de perfil</div><div class="muted small">Toca el círculo para elegir una foto</div></div>
       <button class="chip-btn" id="ct-rm" onclick="removeCtPhoto()">Quitar</button>
     </div>
-    <div class="field"><label>Nombre</label><input id="ct-name" class="inp" maxlength="40" autocomplete="off" placeholder="Ej: Mamá, Carlos, Yaneisy" oninput="updCtAv()" value="${esc(c ? c.name : '')}"></div>
+    <button class="btn ghost" style="margin-bottom:14px" onclick="importIntoForm()">Importar de mis contactos</button>
+    <div class="field"><label>Nombre</label><input id="ct-name" class="inp" maxlength="40" autocomplete="off" placeholder="Ej: Mamá, Carlos, Yaneisy" oninput="updCtAv()" value="${esc(nameV)}"></div>
+    <div class="field"><label>Móvil (opcional)</label><input id="ct-phone" class="inp" inputmode="numeric" maxlength="20" placeholder="5XXXXXXX" autocomplete="off" oninput="fmtPhone(this)" value="${esc(phoneV)}"><div class="hint">Se usa por defecto en las tarjetas de este contacto.</div></div>
     <button class="btn" onclick="saveContact()">${c ? 'Guardar cambios' : 'Guardar y agregar tarjeta'}</button>
     ${c ? `<button class="btn danger" style="margin-top:10px" onclick="confirmDelContact('${id}')">Eliminar contacto</button>` : ''}`);
   updCtAv();
@@ -1225,8 +1280,10 @@ function openContactForm(id) {
 function saveContact() {
   const name = $('#ct-name').value.trim();
   if (!name) return toast('Escribe el nombre');
-  if (F.ctEdit) { const c = ctById(F.ctEdit); c.name = name; c.photo = F.ctPhoto || ''; save(); closeSheet(); render(); return toast('Contacto guardado'); }
-  const c = { id: uid(), name, photo: F.ctPhoto || '', cards: [] };
+  const rawPhone = $('#ct-phone').value.trim(), phone = normPhone(rawPhone);
+  if (rawPhone && !phone) return toast('El móvil debe tener 8 dígitos (sin +53)');
+  if (F.ctEdit) { const c = ctById(F.ctEdit); c.name = name; c.phone = phone; c.photo = F.ctPhoto || ''; save(); closeSheet(); render(); return toast('Contacto guardado'); }
+  const c = { id: uid(), name, phone, photo: F.ctPhoto || '', cards: [] };
   S.contacts.push(c); UI.open[c.id] = true; save(); render(); openKCardForm(c.id);
 }
 function confirmDelContact(id) {
@@ -1244,7 +1301,7 @@ function openKCardForm(cid, id) {
     <div class="field"><label>Tipo</label><div class="brand-grid" id="k-brands"></div></div>
     <div class="field"><label>Nombre de la tarjeta (opcional)</label><input id="k-alias" class="inp" maxlength="24" placeholder="Ej: Principal, Ahorro" value="${esc(k ? k.alias : '')}"></div>
     <div class="field"><label id="k-numlbl"></label><input id="k-num" class="inp" autocomplete="off" oninput="fmtKNum()" value="${k ? esc(BRANDS[k.brand].acct ? k.number : fmtDigits(k.number)) : ''}"></div>
-    ${phoneField('k-phone', k && k.phone)}
+    ${phoneField('k-phone', (k && k.phone) || ct.phone)}
     <button class="btn" onclick="saveKCard()">${k ? 'Guardar cambios' : 'Agregar tarjeta'}</button>
     ${k ? `<button class="btn danger" style="margin-top:10px" onclick="confirmDelKCard('${cid}','${id}')">Eliminar tarjeta</button>` : ''}`);
   renderKBrands();
@@ -1281,7 +1338,8 @@ function openQR(gid, id) {
   const me = gid === 'me', ct = me ? null : ctById(gid);
   const k = me ? cardById(id) : ct && ct.cards.find(c => c.id === id);
   if (!k || !k.number) return;
-  const svg = QR.svg(qrText(k));
+  const phone = me ? (S.phone || k.phone || '') : (k.phone || (ct && ct.phone) || '');
+  const svg = QR.svg(qrText(k, phone));
   if (!svg) return toast('Ese texto es demasiado largo para un QR');
   const b = BRANDS[k.brand]; F.qrText = k.number;
   openSheet('Código QR', `
@@ -1289,7 +1347,7 @@ function openQR(gid, id) {
     <div class="qr-cap"><div class="qr-owner">${esc(me ? (S.name || 'Yo') : ct.name)}</div>
       <div class="muted small">${esc(b.n)}${k.alias ? ' · ' + esc(k.alias) : ''}</div></div>
     <div class="qr-num ${b.acct ? 'acct' : ''}">${b.acct ? esc(k.number) : fmtDigits(k.number)}</div>
-    ${TM_BRANDS[k.brand] ? `<div class="muted small" style="text-align:center;margin:-8px 0 16px;line-height:1.5">Escanéalo en Transfermóvil:<br>Transferencia → escanear QR${k.phone ? '<br>Móvil ' + esc(k.phone) : ''}</div>` : ''}
+    ${TM_BRANDS[k.brand] ? `<div class="muted small" style="text-align:center;margin:-8px 0 16px;line-height:1.5">Escanéalo en Transfermóvil:<br>Transferencia → escanear QR${phone ? '<br>Móvil ' + esc(phone) : (me ? '<br>Agrega tu móvil en Ajustes → Perfil para incluirlo' : '')}</div>` : ''}
     <button class="btn ghost" onclick="copyText(F.qrText).then(ok => toast(ok ? 'Copiado' : 'No se pudo copiar'))">Copiar número</button>`);
 }
 function bigCard(c, clickable) {
@@ -1375,7 +1433,7 @@ function cardBars() {
 /* ====== Pantalla: Ajustes ====== */
 
 /* ====== Contador de billetes ====== */
-const COUNTER_DENOMS = { CUP: [1, 3, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000], USD: [1, 5, 10, 20, 50, 100] };
+const COUNTER_DENOMS = { CUP: [5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000], USD: [1, 5, 10, 20, 50, 100] };
 function counterCounts(cur) { return S.counter.counts[cur] || (S.counter.counts[cur] = {}); }
 function counterTotal(cur) { const c = counterCounts(cur); return COUNTER_DENOMS[cur].reduce((s, d) => s + d * (c[d] || 0), 0); }
 function vCounter() {
@@ -1446,7 +1504,10 @@ function vSettings() {
       <label class="chip-btn">${S.photo ? 'Cambiar' : 'Subir'}<input type="file" accept="image/*" hidden onchange="setPhoto(this)"></label></div>
     <div class="set-row"><span class="grow">Nombre</span>
     <input class="inp" style="width:60%" value="${esc(S.name)}" placeholder="Tu nombre" maxlength="40" onchange="S.name=this.value.trim();save();toast('Nombre guardado')"></div>
+    <div class="set-row"><span class="grow">Mi móvil</span>
+    <input id="my-phone" class="inp" style="width:60%" inputmode="numeric" maxlength="20" placeholder="5XXXXXXX" value="${esc(S.phone)}" oninput="fmtPhone(this)" onchange="setMyPhone(this)"></div>
   </div>
+  <p class="muted small" style="margin:-4px 4px 0;line-height:1.5">Tu móvil va dentro del QR de tus tarjetas de Transfermóvil.</p>
 
   <div class="set-title">Tasa de cambio</div>
   <div class="set-group">
@@ -1592,7 +1653,6 @@ function openCardForm(id, kind) {
     <div class="field" id="c-numfield"><label id="c-numlbl">Número de la tarjeta</label>
       <input id="c-num" class="inp" autocomplete="off" oninput="fmtNumInput()" value="${c && c.number ? esc(BRANDS[c.brand].acct ? c.number : fmtDigits(c.number)) : ''}">
       <div class="hint">${c && !c.number ? 'Escribe el número completo para poder copiarlo desde el inicio. ' : ''}Se guarda solo en este teléfono. Nunca pongas el CVV ni el PIN.</div></div>
-    ${phoneField('c-phone', c && c.phone)}
     <div class="field"><label>Moneda</label><div class="seg seg4" id="c-curs"></div></div>
     <div class="field"><label>Saldo inicial</label><div class="inp-wrap"><input id="c-init" class="inp" inputmode="decimal" placeholder="0.00" value="${c ? c.initial : ''}"><span class="inp-suf" id="c-cursuf"></span></div>
       <div class="hint">${c ? 'Saldo antes de los movimientos registrados.' : 'Lo que tiene la tarjeta ahora mismo.'}</div></div>
@@ -1618,7 +1678,6 @@ function renderBrands() {
     `<button class="brand-opt ${F.brand === k ? 'on' : ''}" onclick="pickBrand('${k}')" aria-label="${BRANDS[k].n}">${badge(k)}</button>`).join('');
   const b = BRANDS[F.brand], inp = $('#c-num');
   $('#c-numfield').style.display = b.cash ? 'none' : '';
-  $('#c-phonefield').style.display = TM_BRANDS[F.brand] ? '' : 'none';
   if (b.cash) return;
   $('#c-numlbl').textContent = b.lbl;
   inp.placeholder = b.acct ? b.ph : '0000 0000 0000 0000';
@@ -1649,11 +1708,9 @@ function saveCard() {
     if (number.length < 13 || number.length > 19) return toast('El número debe tener entre 13 y 19 dígitos');
   }
   const last4 = number.slice(-4);
-  const phone = TM_BRANDS[F.brand] ? $('#c-phone').value.replace(/\D/g, '') : '';
-  if (phone && phone.length !== 8) return toast('El móvil debe tener 8 dígitos (sin +53)');
   const iv = $('#c-init').value.trim(), init = iv === '' ? 0 : parseNum(iv);
   if (isNaN(init)) return toast('El saldo inicial no es un número válido');
-  const data = { brand: F.brand, alias: $('#c-alias').value.trim(), number, last4, phone, color: F.color, included: F.edit ? cardById(F.edit).included : true, currency: F.cur, initial: round2(init) };
+  const data = { brand: F.brand, alias: $('#c-alias').value.trim(), number, last4, color: F.color, included: F.edit ? cardById(F.edit).included : true, currency: F.cur, initial: round2(init) };
   if (F.edit) {
     const c = cardById(F.edit);
     if (c.currency !== F.cur && S.tx.some(t => t.cardId === c.id || t.toId === c.id))
