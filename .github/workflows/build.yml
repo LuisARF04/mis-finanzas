@@ -39,6 +39,34 @@ jobs:
       - name: Copiar la web al proyecto
         run: npx cap sync android
 
+      # Selector de contactos del teléfono (código nativo propio en la carpeta native/).
+      # Solo pide permiso de LECTURA de contactos. Se prueba que compile; si por
+      # cualquier motivo no compila, el siguiente paso lo quita y la app se
+      # construye igual, solo que sin la función de importar contactos.
+      - name: Agregar selector de contactos
+        id: contactos
+        continue-on-error: true
+        run: |
+          set -e
+          PKG_DIR=android/app/src/main/java/com/misfinanzas/cup
+          test -d "$PKG_DIR"
+          cp native/ContactPickerPlugin.java "$PKG_DIR/ContactPickerPlugin.java"
+          cp native/MainActivity.java "$PKG_DIR/MainActivity.java"
+          python3 scripts/add_contacts_permission.py android/app/src/main/AndroidManifest.xml
+          cd android
+          chmod +x gradlew
+          ./gradlew :app:compileReleaseJavaWithJavac
+
+      - name: Quitar selector de contactos (solo si no compiló)
+        if: steps.contactos.outcome == 'failure'
+        run: |
+          PKG_DIR=android/app/src/main/java/com/misfinanzas/cup
+          [ -d "$PKG_DIR" ] || exit 0
+          rm -f "$PKG_DIR/ContactPickerPlugin.java"
+          printf 'package com.misfinanzas.cup;\n\nimport com.getcapacitor.BridgeActivity;\n\npublic class MainActivity extends BridgeActivity {}\n' > "$PKG_DIR/MainActivity.java"
+          sed -i '/android.permission.READ_CONTACTS/d' android/app/src/main/AndroidManifest.xml
+          echo "AVISO: el selector de contactos no compiló; la app se construye sin esa función."
+
       # Número de versión que sube en cada compilación
       # Toma el número de APP_VERSION del index.html (el mismo que sale en Ajustes)
       - name: Versión
@@ -65,6 +93,8 @@ jobs:
             --ks-key-alias walletapp --key-pass pass:'Wllt#Cuba2026x' \
             --out Wallet.apk alineado.apk
           $BT/apksigner verify Wallet.apk
+          echo "--- Permisos de la app final ---"
+          $BT/aapt2 dump permissions Wallet.apk || true
 
       - name: Publicar en Releases
         uses: softprops/action-gh-release@v2
