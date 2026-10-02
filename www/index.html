@@ -288,6 +288,9 @@ input[type=datetime-local].inp{color-scheme:dark}
 .qr-btn{position:absolute;top:7px;right:7px;width:30px;height:30px;border-radius:10px;background:rgba(255,255,255,.09);color:var(--text);display:grid;place-items:center;transition:background .12s,color .12s,transform .1s}
 .qr-btn svg{width:16px;height:16px}
 .qr-btn:active{background:var(--accent);color:var(--accent-ink);transform:scale(.92)}
+.chk-row{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;border-radius:14px;background:var(--surface2);border:1px solid var(--line);font-weight:600;font-size:14px;color:var(--muted);text-align:left;transition:color .15s}
+.chk-row.on{color:var(--text)}
+.chk-row .acc-check{pointer-events:none}
 .add-card{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:18px;border:1.5px dashed var(--surface3);color:var(--muted);font-weight:600;font-size:15px}
 .add-card svg{width:18px;height:18px}
 .add-card:active{background:var(--surface2)}
@@ -789,7 +792,11 @@ function cardBal(c) {
 }
 const totalCUP = () => S.cards.reduce((s, c) => s + toCUP(cardBal(c), c.currency), 0);
 // Solo las cuentas marcadas con su casilla cuentan para el "Saldo" del inicio
-const homeTotalCUP = () => S.cards.filter(c => c.included).reduce((s, c) => s + toCUP(cardBal(c), c.currency), 0);
+// ¿Se muestra la cuenta en la pantalla principal? El efectivo siempre (salvo en cero); las demás, según su casilla
+const showsHome = c => !!BRANDS[c.brand].cash || c.showHome !== false;
+// Cuentas que se ven en el inicio: las que se muestran y no están en cero
+const homeCards = () => S.cards.filter(c => showsHome(c) && round2(cardBal(c)) !== 0);
+const homeTotalCUP = () => S.cards.filter(c => c.included && showsHome(c)).reduce((s, c) => s + toCUP(cardBal(c), c.currency), 0);
 // Convierte el saldo de la cuenta seleccionada a la moneda elegida en el inicio
 // El saldo grande se expresa en la moneda elegida (CUP, USD o SQP)
 function homeSaldo(cur) { const cup = homeTotalCUP(); return cur === 'CUP' ? cup : cup / rate(cur); }
@@ -823,7 +830,7 @@ let toastT;
 function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2200); }
 
 /* ====== Navegación ====== */
-const APP_VERSION = '2.9.9.1';
+const APP_VERSION = '2.9.9.3';
 
 /* ====== Actualizaciones desde GitHub Releases ====== */
 const GH_REPO = 'LuisARF04/mis-finanzas'; // usuario/repositorio donde se compila el APK
@@ -963,7 +970,7 @@ function vHome() {
     </div>` : ''}
   </section>
 
-  <div class="sec-head"><h2>Mis Cuentas</h2><button class="chip-btn" onclick="selectAllAccounts()">${I.check} Seleccionar todas</button></div>
+  <div class="sec-head"><h2>Mis Cuentas</h2><button class="chip-btn" onclick="selectAllAccounts()">${I.check} Seleccionar Todas</button></div>
   ${S.cards.length ? stack() : `<div class="panel empty">Agrega tu primera cuenta para empezar.<br><br><button class="btn" onclick="openCardForm(null,'account')">Agregar cuenta</button></div>`}
 
   <div class="sec-head"><h2>Recientes</h2>${S.tx.length ? `<button class="link" onclick="go('history')">Ver todo</button>` : ''}</div>
@@ -978,9 +985,9 @@ function acctSub(c) {
   return `${b.n}${b.acct ? '' : ' ••' + c.last4} · ${c.currency}`;
 }
 function stack() {
-  // Solo se muestran las cuentas con saldo (las que están en cero se ocultan)
-  const vis = S.cards.filter(c => round2(cardBal(c)) !== 0);
-  if (!vis.length) return `<div class="empty">Ninguna de tus cuentas tiene saldo ahora mismo.</div>`;
+  // Solo se muestran las cuentas con saldo y marcadas para mostrarse (casilla en Tarjetas)
+  const vis = homeCards();
+  if (!vis.length) return `<div class="empty">No hay cuentas para mostrar. Aquí aparecen las que tienen saldo y están marcadas en Tarjetas.</div>`;
   if (!vis.some(c => c.id === UI.sel)) UI.sel = vis[0].id;
   const order = vis.filter(c => c.id !== UI.sel).concat(cardById(UI.sel));
   return `<div class="stack">${order.map((c, i) => {
@@ -1006,7 +1013,14 @@ function setMyPhone(el) {
   if (!p) { el.value = S.phone; return toast('El móvil debe tener 8 dígitos (sin +53)'); }
   S.phone = p; el.value = p; save(); toast('Móvil guardado');
 }
-function selectAllAccounts() { S.cards.forEach(c => c.included = true); save(); render(); toast('Todas las cuentas seleccionadas'); }
+// Alterna sobre las cuentas que se ven en el inicio: si ya están todas marcadas, las desmarca
+function selectAllAccounts() {
+  const list = homeCards();
+  if (!list.length) return toast('No hay cuentas para seleccionar');
+  const all = list.every(c => c.included);
+  list.forEach(c => c.included = !all);
+  save(); render(); toast(all ? 'Todas las cuentas desmarcadas' : 'Todas las cuentas seleccionadas');
+}
 function avatarInner() { return S.photo ? `<img src="${S.photo}" alt="">` : esc(initials()); }
 // Foto de perfil: recorte cuadrado al centro, 256 px
 function setPhoto(inp) {
@@ -1270,7 +1284,7 @@ function openContactForm(id, pre) {
       <div class="grow"><div style="font-weight:600">Foto de perfil</div><div class="muted small">Toca el círculo para elegir una foto</div></div>
       <button class="chip-btn" id="ct-rm" onclick="removeCtPhoto()">Quitar</button>
     </div>
-    <button class="btn ghost" style="margin-bottom:14px" onclick="importIntoForm()">Importar de mis contactos</button>
+    ${c ? '' : `<button class="btn ghost" style="margin-bottom:14px" onclick="importIntoForm()">Importar de mis contactos</button>`}
     <div class="field"><label>Nombre</label><input id="ct-name" class="inp" maxlength="40" autocomplete="off" placeholder="Ej: Mamá, Carlos, Yaneisy" oninput="updCtAv()" value="${esc(nameV)}"></div>
     <div class="field"><label>Móvil (opcional)</label><input id="ct-phone" class="inp" inputmode="numeric" maxlength="20" placeholder="5XXXXXXX" autocomplete="off" oninput="fmtPhone(this)" value="${esc(phoneV)}"><div class="hint">Se usa por defecto en las tarjetas de este contacto.</div></div>
     <button class="btn" onclick="saveContact()">${c ? 'Guardar cambios' : 'Guardar y agregar tarjeta'}</button>
@@ -1301,7 +1315,7 @@ function openKCardForm(cid, id) {
     <div class="field"><label>Tipo</label><div class="brand-grid" id="k-brands"></div></div>
     <div class="field"><label>Nombre de la tarjeta (opcional)</label><input id="k-alias" class="inp" maxlength="24" placeholder="Ej: Principal, Ahorro" value="${esc(k ? k.alias : '')}"></div>
     <div class="field"><label id="k-numlbl"></label><input id="k-num" class="inp" autocomplete="off" oninput="fmtKNum()" value="${k ? esc(BRANDS[k.brand].acct ? k.number : fmtDigits(k.number)) : ''}"></div>
-    ${phoneField('k-phone', (k && k.phone) || ct.phone)}
+    ${normPhone(ct.phone) ? '' : phoneField('k-phone', k && k.phone)}
     <button class="btn" onclick="saveKCard()">${k ? 'Guardar cambios' : 'Agregar tarjeta'}</button>
     ${k ? `<button class="btn danger" style="margin-top:10px" onclick="confirmDelKCard('${cid}','${id}')">Eliminar tarjeta</button>` : ''}`);
   renderKBrands();
@@ -1310,7 +1324,7 @@ function renderKBrands() {
   $('#k-brands').innerHTML = K_BRANDS.map(b => `<button class="brand-opt ${F.brand === b ? 'on' : ''}" onclick="pickKBrand('${b}')" aria-label="${BRANDS[b].n}">${badge(b)}</button>`).join('');
   const b = BRANDS[F.brand], inp = $('#k-num');
   $('#k-numlbl').textContent = b.lbl;
-  $('#k-phonefield').style.display = TM_BRANDS[F.brand] ? '' : 'none';
+  const pf = $('#k-phonefield'); if (pf) pf.style.display = TM_BRANDS[F.brand] ? '' : 'none';
   inp.placeholder = b.acct ? b.ph : '0000 0000 0000 0000';
   inp.inputMode = b.acct ? 'email' : 'numeric'; inp.maxLength = b.acct ? 60 : 23;
   fmtKNum();
@@ -1322,9 +1336,13 @@ function saveKCard() {
   let number;
   if (b.acct) { if (raw.length < 3) return toast('Escribe el ' + b.lbl.toLowerCase()); number = raw; }
   else { number = raw.replace(/\D/g, ''); if (number.length < 13 || number.length > 19) return toast('El número debe tener entre 13 y 19 dígitos'); }
-  const phone = TM_BRANDS[F.brand] ? $('#k-phone').value.replace(/\D/g, '') : '';
-  if (phone && phone.length !== 8) return toast('El móvil debe tener 8 dígitos (sin +53)');
-  const data = { brand: F.brand, alias: $('#k-alias').value.trim(), number, last4: number.slice(-4), phone };
+  // Si el contacto ya tiene móvil, la tarjeta usa ese y no se pide aquí
+  const pf = $('#k-phone'), data = { brand: F.brand, alias: $('#k-alias').value.trim(), number, last4: number.slice(-4) };
+  if (pf) {
+    const phone = TM_BRANDS[F.brand] ? pf.value.replace(/\D/g, '') : '';
+    if (phone && phone.length !== 8) return toast('El móvil debe tener 8 dígitos (sin +53)');
+    data.phone = phone;
+  }
   if (F.kid) Object.assign(ct.cards.find(x => x.id === F.kid), data); else ct.cards.push(Object.assign({ id: uid() }, data));
   UI.open[ct.id] = true; save(); closeSheet(); render(); toast(F.kid ? 'Cambios guardados' : 'Tarjeta agregada');
 }
@@ -1338,7 +1356,7 @@ function openQR(gid, id) {
   const me = gid === 'me', ct = me ? null : ctById(gid);
   const k = me ? cardById(id) : ct && ct.cards.find(c => c.id === id);
   if (!k || !k.number) return;
-  const phone = me ? (S.phone || k.phone || '') : (k.phone || (ct && ct.phone) || '');
+  const phone = me ? (S.phone || k.phone || '') : ((ct && ct.phone) || k.phone || '');
   const svg = QR.svg(qrText(k, phone));
   if (!svg) return toast('Ese texto es demasiado largo para un QR');
   const b = BRANDS[k.brand]; F.qrText = k.number;
@@ -1645,7 +1663,7 @@ function saveTransfer() {
 /* --- Tarjeta nueva / editar --- */
 function openCardForm(id, kind) {
   const c = id ? cardById(id) : null;
-  F = { brand: c ? c.brand : 'BPA', cur: c ? c.currency : 'CUP', orig: c ? c.currency : null, edit: id || null, color: c ? accent(c) : nextColor(), kind };
+  F = { brand: c ? c.brand : 'BPA', cur: c ? c.currency : 'CUP', orig: c ? c.currency : null, edit: id || null, color: c ? accent(c) : nextColor(), kind, showHome: c ? c.showHome !== false : true };
   openSheet(c ? 'Editar tarjeta' : (kind === 'account' ? 'Nueva Cuenta' : 'Nueva tarjeta'), `
     <div class="field"><label>Tipo</label><div class="brand-grid" id="c-brands"></div></div>
     <div class="field"><label>Nombre de la cuenta</label><input id="c-alias" class="inp" maxlength="24" placeholder="Ej: Salario, Ahorro, Caja, Negocio" value="${esc(c ? c.alias : '')}"></div>
@@ -1656,9 +1674,16 @@ function openCardForm(id, kind) {
     <div class="field"><label>Moneda</label><div class="seg seg4" id="c-curs"></div></div>
     <div class="field"><label>Saldo inicial</label><div class="inp-wrap"><input id="c-init" class="inp" inputmode="decimal" placeholder="0.00" value="${c ? c.initial : ''}"><span class="inp-suf" id="c-cursuf"></span></div>
       <div class="hint">${c ? 'Saldo antes de los movimientos registrados.' : 'Lo que tiene la tarjeta ahora mismo.'}</div></div>
+    <div class="field" id="c-homefield"><button type="button" class="chk-row ${F.showHome ? 'on' : ''}" id="c-home" onclick="toggleFormHome()"><span class="acc-check ${F.showHome ? 'on' : ''}">${F.showHome ? I.check : ''}</span>Mostrar en la pantalla principal</button>
+      <div class="hint">Si la desmarcas, no sale en el inicio ni suma al Saldo.</div></div>
     <button class="btn" onclick="saveCard()">${c ? 'Guardar cambios' : (kind === 'account' ? 'Agregar Cuenta' : 'Agregar tarjeta')}</button>
     ${c ? `<button class="btn danger" style="margin-top:10px" onclick="confirmDelCard('${id}')">Eliminar tarjeta</button>` : ''}`);
   renderBrands(); renderCurs(); renderSw();
+}
+function toggleFormHome() {
+  F.showHome = !F.showHome;
+  const r = $('#c-home'), ck = r.querySelector('.acc-check');
+  r.classList.toggle('on', F.showHome); ck.classList.toggle('on', F.showHome); ck.innerHTML = F.showHome ? I.check : '';
 }
 function renderSw() {
   $('#c-sw').innerHTML = PALETTE.map(col => `<button class="sw ${F.color === col ? 'on' : ''}" style="background:${col}" onclick="F.color='${col}';renderSw()" aria-label="Color"></button>`).join('');
@@ -1678,6 +1703,7 @@ function renderBrands() {
     `<button class="brand-opt ${F.brand === k ? 'on' : ''}" onclick="pickBrand('${k}')" aria-label="${BRANDS[k].n}">${badge(k)}</button>`).join('');
   const b = BRANDS[F.brand], inp = $('#c-num');
   $('#c-numfield').style.display = b.cash ? 'none' : '';
+  $('#c-homefield').style.display = b.cash ? 'none' : '';
   if (b.cash) return;
   $('#c-numlbl').textContent = b.lbl;
   inp.placeholder = b.acct ? b.ph : '0000 0000 0000 0000';
@@ -1710,7 +1736,7 @@ function saveCard() {
   const last4 = number.slice(-4);
   const iv = $('#c-init').value.trim(), init = iv === '' ? 0 : parseNum(iv);
   if (isNaN(init)) return toast('El saldo inicial no es un número válido');
-  const data = { brand: F.brand, alias: $('#c-alias').value.trim(), number, last4, color: F.color, included: F.edit ? cardById(F.edit).included : true, currency: F.cur, initial: round2(init) };
+  const data = { brand: F.brand, alias: $('#c-alias').value.trim(), number, last4, color: F.color, showHome: b.cash ? true : F.showHome, included: F.edit ? cardById(F.edit).included : true, currency: F.cur, initial: round2(init) };
   if (F.edit) {
     const c = cardById(F.edit);
     if (c.currency !== F.cur && S.tx.some(t => t.cardId === c.id || t.toId === c.id))
