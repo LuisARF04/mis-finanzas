@@ -58,9 +58,10 @@ svg{display:block}
 .sec-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:28px 0 14px}
 .sec-head h2{font-size:22px;font-weight:600;white-space:nowrap}
 .sec-head .chip-btn,.sec-head .link{flex-shrink:0}
-@media (max-width:359px){.sec-head h2{font-size:19px}.sec-head .chip-btn{padding:6px 10px;font-size:12px}}
-@media (max-width:339px){.sec-head .chip-btn svg{display:none}}
-@media (max-width:319px){.sec-head h2{font-size:17px}.sec-head .chip-btn{font-size:11px;padding:6px 8px}}
+@media (max-width:419px){.sec-head .chip-btn svg{display:none}.sec-head .chip-btn{padding:6px 11px;font-size:12.5px}.sec-left .sc-toggle{height:26px;padding:0 6px 0 9px}.sec-left .sc-toggle svg{width:13px;height:13px}}
+@media (max-width:389px){.sec-head h2{font-size:19px}.sec-head .chip-btn{padding:6px 10px;font-size:12px}}
+@media (max-width:359px){.sec-head h2{font-size:18px}.sec-head .chip-btn{padding:6px 9px;font-size:11.5px}.sec-left .sc-toggle{padding:0 5px 0 8px}}
+@media (max-width:339px){.sec-head{flex-wrap:wrap;row-gap:10px}.sec-head .chip-btn{margin-left:auto}}
 .link{color:var(--accent);font-size:14px;font-weight:600}
 
 /* Pila de tarjetas (como la foto) */
@@ -73,6 +74,12 @@ svg{display:block}
 .sc-name{display:flex;align-items:center;font-weight:600;font-size:15px;min-width:0}
 .sc-name .ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sc-sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.sc-toggle{display:flex;align-items:center;gap:3px;height:28px;padding:0 8px 0 11px;border-radius:14px;background:rgba(255,255,255,.09);color:var(--text);font-size:12.5px;font-weight:700;flex-shrink:0;transition:background .15s,color .15s}
+.sc-toggle svg{width:14px;height:14px;transform:rotate(90deg);transition:transform .2s}
+.sc-toggle.open svg{transform:rotate(-90deg)}
+.sc-toggle:active{background:var(--accent);color:var(--accent-ink)}
+.sec-left{display:flex;align-items:center;gap:8px;min-width:0}
+.sec-left .sc-toggle{background:var(--surface2);border:1px solid var(--line)}
 .acc-check{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--surface3);display:grid;place-items:center;flex-shrink:0;color:var(--accent-ink);transition:background .15s,border-color .15s,transform .1s}
 .acc-check:active{transform:scale(.88)}
 .acc-check svg{width:14px;height:14px}
@@ -304,6 +311,7 @@ input[type=datetime-local].inp{color-scheme:dark}
 /* ====== Animaciones ====== */
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes rowIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
 @keyframes cardIn{from{opacity:.6;transform:translateY(-16px) scale(.98)}to{opacity:1;transform:none}}
 @keyframes flash{from{background:rgba(184,255,41,.16)}to{background:transparent}}
 @keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
@@ -315,6 +323,7 @@ input[type=datetime-local].inp{color-scheme:dark}
 .intro>*:nth-child(2){animation-delay:.03s}.intro>*:nth-child(3){animation-delay:.06s}
 .intro>*:nth-child(4){animation-delay:.08s}.intro>*:nth-child(5){animation-delay:.1s}.intro>*:nth-child(6){animation-delay:.12s}
 .stack-card.pop{animation:cardIn .22s cubic-bezier(.2,.8,.2,1)}
+.stack-card.rowin{animation:rowIn .22s cubic-bezier(.2,.8,.2,1) calc(var(--i) * 35ms) backwards}
 .stack-card.pop .sc-front{animation:fadeIn .2s .04s both}
 .tx.new{animation:fadeUp .2s cubic-bezier(.2,.8,.2,1),flash .9s .1s ease-out}
 #histList{animation:fadeIn .14s both}
@@ -335,6 +344,26 @@ input[type=datetime-local].inp{color-scheme:dark}
 
 /* Se apagan solo si el usuario las desactiva en Ajustes */
 html.no-anim *,html.no-anim *::before,html.no-anim *::after{transition:none!important;animation:none!important}
+
+/* Tienda (Cuenta Empresarial) */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:34px;height:34px;border-radius:50%;border:3px solid var(--surface3);border-top-color:var(--accent);animation:spin .9s linear infinite;flex-shrink:0}
+.spinner.sm{width:20px;height:20px;border-width:2.5px}
+.icon-btn.spin svg{animation:spin .8s linear infinite}
+.top h1.ell{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.biz-list{display:flex;flex-direction:column;gap:10px}
+.biz-card{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;border-radius:22px;background:var(--surface);border:1px solid var(--line);text-align:left}
+.biz-card.pend{border-style:dashed}
+.biz-card .grow{min-width:0}
+.biz-card>svg{width:18px;height:18px;color:var(--muted);flex-shrink:0}
+.biz-ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:rgba(184,255,41,.12);color:var(--accent);flex-shrink:0}
+.biz-ic svg{width:22px;height:22px}
+.biz-n{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx.sale .tx-t{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.biz-wait{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:6px 0 18px}
+.biz-code{font-size:44px;font-weight:700;letter-spacing:10px;padding-left:10px;font-variant-numeric:tabular-nums}
+.biz-demo{margin:-6px 0 14px;padding:8px 12px;border-radius:12px;background:rgba(255,193,7,.12);color:#ffd166;font-size:12.5px;font-weight:600;text-align:center}
+.biz-note{margin:-6px 0 14px;padding:10px 12px;border-radius:12px;background:var(--surface2);color:var(--muted);font-size:13px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 </style>
 </head>
 <body>
@@ -433,6 +462,8 @@ const I = {
   x: ic('<path d="M18 6 6 18M6 6l12 12"/>'),
   count: ic('<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="7.5" cy="9" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="9" r="1.3" fill="currentColor" stroke="none"/><circle cx="16.5" cy="9" r="1.3" fill="currentColor" stroke="none"/><circle cx="7.5" cy="15" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r="1.3" fill="currentColor" stroke="none"/><circle cx="16.5" cy="15" r="1.3" fill="currentColor" stroke="none"/>'),
   trash: ic('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'),
+  store: ic('<path d="M4 9.5 5.5 4h13L20 9.5"/><path d="M4 9.5a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0 2.7 2.7 0 0 0 5.3 0"/><path d="M5 12.5V20h14v-7.5"/><path d="M10 20v-4.5h4V20"/>'),
+  refresh: ic('<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>'),
   qr: ic('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h2.5v2.5H14zM20.5 14v2.5M14 20.5h2.5M18.5 18.5H21v2.5h-2.5z"/>'),
   userPlus: ic('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/>'),
   check: ic('<path d="M20 6 9 17l-5-5"/>'),
@@ -626,7 +657,7 @@ const QR = (() => {
 const PALETTE = ['#ff8a5b', '#6fb6ff', '#c77dff', '#4dd4ac', '#ffc542', '#ff6b9a', '#8b7bff'];
 /* ====== Datos (se guardan en el teléfono) ====== */
 function defaults() {
-  return { v: 12, name: '', photo: '', phone: '', onboarded: false, rates: { USD: 400, SQP: 420, MLC: 300 }, eltoqueToken: '', cards: [], contacts: [], tx: [], hide: false, anim: true, counter: { cur: 'CUP', counts: {} } };
+  return { v: 13, name: '', photo: '', phone: '', onboarded: false, rates: { USD: 400, SQP: 420, MLC: 300 }, eltoqueToken: '', stores: [], bizPending: null, deviceToken: '', cards: [], contacts: [], tx: [], hide: false, anim: true, counter: { cur: 'CUP', counts: {} } };
 }
 // Versión 1 → 2: las tarjetas USDT pasan a tener su propia moneda
 function migrate(d) {
@@ -686,6 +717,8 @@ function migrate(d) {
   if (d.v < 11) { if (d.eltoqueToken === undefined) d.eltoqueToken = ''; d.v = 11; }
   // Versión 11 → 12: mi móvil (va dentro del QR de mis tarjetas)
   if (d.v < 12) { if (!d.phone) d.phone = (d.cards.find(c => c.phone) || {}).phone || ''; d.v = 12; }
+  // Versión 12 → 13: tiendas vinculadas (Cuenta Empresarial)
+  if (d.v < 13) { d.stores = d.stores || []; d.bizPending = d.bizPending || null; d.deviceToken = d.deviceToken || ''; d.v = 13; }
   return d;
 }
 let memStore = null;
@@ -703,7 +736,7 @@ function save() {
 }
 
 // Estado de la interfaz (no se guarda)
-const UI = { screen: 'home', sel: null, filter: 'all', card: 'all', q: '', month: null, cq: '', open: { me: true }, convCur: 'CUP' };
+const UI = { screen: 'home', sel: null, accOpen: false, storeId: null, biz: {}, filter: 'all', card: 'all', q: '', month: null, cq: '', open: { me: true }, convCur: 'CUP' };
 let F = {}; // estado del formulario abierto
 
 /* ====== Utilidades ====== */
@@ -830,7 +863,7 @@ let toastT;
 function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2200); }
 
 /* ====== Navegación ====== */
-const APP_VERSION = '2.9.9.3';
+const APP_VERSION = '2.9.9.7';
 
 /* ====== Actualizaciones desde GitHub Releases ====== */
 const GH_REPO = 'LuisARF04/mis-finanzas'; // usuario/repositorio donde se compila el APK
@@ -871,7 +904,7 @@ function downloadUpdate() {
 function applyAnim() { document.documentElement.classList.toggle('no-anim', !S.anim); }
 function toggleAnim() { S.anim = !S.anim; save(); applyAnim(); render(); toast(S.anim ? 'Animaciones activadas' : 'Animaciones desactivadas'); }
 function render() {
-  const views = { home: vHome, history: vHistory, cards: vCards, counter: vCounter, stats: vStats, settings: vSettings };
+  const views = { home: vHome, history: vHistory, cards: vCards, counter: vCounter, stats: vStats, settings: vSettings, store: vStore };
   const main = $('#main');
   // Entrada escalonada solo la primera vez que se abre la app
   if (UI.screen === 'home' && !UI.introDone) {
@@ -890,6 +923,7 @@ function render() {
 }
 function go(s) {
   const changed = UI.screen !== s;
+  if (changed && s === 'home') UI.accOpen = false;   // al volver al inicio, la lista de cuentas empieza contraída
   UI.screen = s; render(); window.scrollTo(0, 0);
   if (changed) { const m = $('#main'); m.classList.remove('screen-in'); void m.offsetWidth; m.classList.add('screen-in'); }
 }
@@ -916,7 +950,7 @@ function renderNav() {
   }
   let changed = false;
   pill.querySelectorAll('.nav-item').forEach(b => {
-    const on = b.dataset.k === UI.screen;
+    const on = b.dataset.k === (UI.screen === 'store' ? 'home' : UI.screen);
     if (b.classList.contains('active') !== on) changed = true;
     b.classList.toggle('active', on);
   });
@@ -970,8 +1004,10 @@ function vHome() {
     </div>` : ''}
   </section>
 
-  <div class="sec-head"><h2>Mis Cuentas</h2><button class="chip-btn" onclick="selectAllAccounts()">${I.check} Seleccionar Todas</button></div>
+  <div class="sec-head"><div class="sec-left"><h2>Mis Cuentas</h2>${accToggleBtn()}</div><button class="chip-btn" onclick="selectAllAccounts()">${I.check} Seleccionar Todas</button></div>
   ${S.cards.length ? stack() : `<div class="panel empty">Agrega tu primera cuenta para empezar.<br><br><button class="btn" onclick="openCardForm(null,'account')">Agregar cuenta</button></div>`}
+
+  ${bizSection()}
 
   <div class="sec-head"><h2>Recientes</h2>${S.tx.length ? `<button class="link" onclick="go('history')">Ver todo</button>` : ''}</div>
   ${recent.length ? `<div>${recent.map(t => txRow(t, true)).join('')}</div>` : `<div class="empty">Aún no hay movimientos. Toca + para registrar uno.</div>`}`;
@@ -989,10 +1025,12 @@ function stack() {
   const vis = homeCards();
   if (!vis.length) return `<div class="empty">No hay cuentas para mostrar. Aquí aparecen las que tienen saldo y están marcadas en Tarjetas.</div>`;
   if (!vis.some(c => c.id === UI.sel)) UI.sel = vis[0].id;
-  const order = vis.filter(c => c.id !== UI.sel).concat(cardById(UI.sel));
+  // Contraída: solo la cuenta elegida. Desplegada: la lista de cuentas y, abajo, la elegida.
+  const open = UI.accOpen && vis.length > 1;
+  const order = open ? vis.filter(c => c.id !== UI.sel).concat(cardById(UI.sel)) : [cardById(UI.sel)];
   return `<div class="stack">${order.map((c, i) => {
     const front = i === order.length - 1, bal = cardBal(c);
-    return `<div class="stack-card ${front ? 'front' : ''} ${front && UI.justSel === c.id ? 'pop' : ''}" style="--i:${i};--bc:${BRANDS[c.brand].c};z-index:${i + 1}" onclick="${front ? `openCardDetail('${c.id}')` : `selectCard('${c.id}')`}">
+    return `<div class="stack-card ${front ? 'front' : ''} ${front && UI.justSel === c.id ? 'pop' : ''} ${!front && UI.rowAnim ? 'rowin' : ''}" style="--i:${i};--bc:${BRANDS[c.brand].c};z-index:${i + 1}" onclick="${front ? `openCardDetail('${c.id}')` : `selectCard('${c.id}')`}">
       <div class="sc-row">${brandIcon(c.brand)}
         <div class="sc-id"><div class="sc-name"><i class="cdot" style="background:${accent(c)}"></i><span class="ell">${esc(acctTitle(c))}</span></div><div class="sc-sub">${esc(acctSub(c))}</div></div>
         <button class="acc-check ${c.included ? 'on' : ''}" onclick="event.stopPropagation();toggleInclude('${c.id}')" aria-label="Incluir en el saldo">${c.included ? I.check : ''}</button></div>
@@ -1004,7 +1042,16 @@ function stack() {
     </div>`;
   }).join('')}</div>`;
 }
-function selectCard(id) { UI.sel = id; UI.justSel = id; render(); }
+function selectCard(id) { UI.sel = id; UI.justSel = id; UI.accOpen = false; render(); }   // al elegir una cuenta, la lista se contrae
+// Píldora junto al título "Mis Cuentas" (solo si hay más de una cuenta que mostrar)
+function accToggleBtn() {
+  const n = homeCards().length;
+  if (n < 2) return '';
+  const open = UI.accOpen;
+  return `<button class="sc-toggle ${open ? 'open' : ''}" onclick="toggleAccounts()" aria-expanded="${open}" aria-label="${open ? 'Contraer la lista de cuentas' : 'Ver la lista de cuentas'}"><span>${n}</span>${I.chevR}</button>`;
+}
+// Botón de Mis Cuentas: despliega o contrae la lista de cuentas elegidas para mostrarse
+function toggleAccounts() { UI.accOpen = !UI.accOpen; UI.rowAnim = UI.accOpen; render(); UI.rowAnim = false; }
 function toggleInclude(id) { const c = cardById(id); if (!c) return; c.included = !c.included; save(); render(); }
 function setMyPhone(el) {
   const raw = el.value.trim();
@@ -1571,7 +1618,8 @@ function openFab() {
   openSheet('Agregar',
     menuItem(I.down, 'Nuevo ingreso', 'Dinero que entra', "openTx('income')") +
     menuItem(I.up, 'Nuevo gasto', 'Dinero que sale', "openTx('expense')") +
-    menuItem(I.card, 'Agregar Cuenta Personal', 'BPA, BANDEC, VISA, Efectivo y más', "openCardForm(null,'account')"));
+    menuItem(I.card, 'Agregar Cuenta Personal', 'BPA, BANDEC, VISA, Efectivo y más', "openCardForm(null,'account')") +
+    menuItem(I.store, 'Agregar Cuenta Empresarial', 'Con el ID de tu tienda', "openBizLink()"));
 }
 function openPlus() {
   openSheet('¿Qué quieres hacer?',
@@ -1878,10 +1926,294 @@ try {
   pin();
 })();
 
+/* ====== Tienda (Cuenta Empresarial) ====== */
+// Cuando tengas el proyecto de Supabase, pega aquí su URL y su clave pública ("anon" o "publishable").
+// Mientras estén vacías, la app funciona en MODO DEMOSTRACIÓN con tiendas y ventas de ejemplo.
+const BIZ_URL = 'https://xbkscrcuktmeydotcxxj.supabase.co';
+const BIZ_KEY = 'sb_publishable_MifDVxX54L7M0rRgRUvwMg_Ko9_7IOS';
+
+const Biz = (() => {
+  const cfg = { url: BIZ_URL.trim().replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/, ''), key: BIZ_KEY.trim() };
+  const live = () => !!(cfg.url && cfg.key);
+
+  // --- Servidor real (Supabase): solo se usan las funciones wallet_* (las tablas no son accesibles desde Wallet) ---
+  async function rpc(fn, args) {
+    let r;
+    try {
+      const h = { 'Content-Type': 'application/json', apikey: cfg.key };
+      if (/^eyJ/.test(cfg.key)) h.Authorization = 'Bearer ' + cfg.key;
+      r = await fetch(`${cfg.url}/rest/v1/rpc/${fn}`, { method: 'POST', headers: h, body: JSON.stringify(args) });
+    } catch (e) { throw new Error('network'); }
+    let data = null; try { data = await r.json(); } catch (e) {}
+    if (!r.ok) {
+      if (r.status === 404 || (data && data.code === 'PGRST202')) throw new Error('not_ready');
+      throw new Error((data && data.message) || 'server');
+    }
+    return data;
+  }
+  const realApi = {
+    requestLink: (id, token, code, label) => rpc('wallet_request_link', { p_store_id: id, p_token: token, p_code: code, p_label: label }),
+    linkStatus: (id, token) => rpc('wallet_link_status', { p_store_id: id, p_token: token }),
+    summary: (id, token) => rpc('wallet_sales_summary', { p_store_id: id, p_token: token }),
+    sales: (id, token, before, limit) => rpc('wallet_get_sales', { p_store_id: id, p_token: token, p_before: before, p_limit: limit }),
+    unlink: (id, token) => rpc('wallet_unlink', { p_store_id: id, p_token: token })
+  };
+
+  // --- Modo demostración (sin servidor) ---
+  const DEMO = { '12345678': 'Bodega La Esquina (demo)', '87654321': 'Cafetería Central (demo)' };
+  const demo = { delay: 6000 };   // la "app de tienda" simulada confirma a los 6 segundos
+  const links = () => { try { return JSON.parse(localStorage.getItem('wallet_demo_links') || '{}'); } catch (e) { return {}; } };
+  const saveLinks = o => { try { localStorage.setItem('wallet_demo_links', JSON.stringify(o)); } catch (e) {} };
+  function demoSales(storeId) {
+    // Generador con semilla: salen siempre las mismas ventas para el mismo ID
+    let seed = (+storeId % 2147483646) + 1;
+    const rnd = () => (seed = seed * 48271 % 2147483647) / 2147483647;
+    const CAT = [['Pan', 25], ['Refresco', 120], ['Café', 60], ['Galletas', 90], ['Aceite 1 L', 650], ['Arroz 1 lb', 180], ['Huevos (cartón)', 2300], ['Jabón', 150], ['Pollo 1 lb', 900], ['Leche en polvo', 1400]];
+    const PAY = ['Efectivo', 'Efectivo', 'Transfermóvil', 'EnZona'];
+    const out = [];
+    for (let d = 0; d < 40; d++) {
+      const day = new Date(); day.setHours(0, 0, 0, 0); day.setDate(day.getDate() - d);
+      const n = 4 + Math.floor(rnd() * 7);
+      for (let k = 0; k < n; k++) {
+        const t = new Date(day); t.setHours(8 + Math.floor(rnd() * 12), Math.floor(rnd() * 60), Math.floor(rnd() * 60));
+        const lines = 1 + Math.floor(rnd() * 3), items = [];
+        for (let i = 0; i < lines; i++) {
+          const [name, price] = CAT[Math.floor(rnd() * CAT.length)], qty = 1 + Math.floor(rnd() * 3);
+          if (!items.some(x => x.name === name)) items.push({ name, qty, price });
+        }
+        out.push({ id: storeId + '-' + t.getTime() + '-' + k, created_at: t.toISOString(), total: items.reduce((s, x) => s + x.qty * x.price, 0), payment_method: PAY[Math.floor(rnd() * PAY.length)], items, note: null });
+      }
+    }
+    const now = Date.now();
+    return out.filter(s => new Date(s.created_at).getTime() <= now).sort((a, b) => b.created_at.localeCompare(a.created_at));
+  }
+  const demoAuth = id => { const l = links()[id]; if (!l || l.status !== 'approved') throw new Error('not_authorized'); };
+  const demoApi = {
+    async requestLink(id) {
+      if (!DEMO[id]) throw new Error('store_not_found');
+      const L = links(); L[id] = { status: 'pending', t: Date.now() }; saveLinks(L);
+      return { status: 'pending' };
+    },
+    async linkStatus(id) {
+      const L = links(), l = L[id];
+      if (!l) return { status: 'none' };
+      if (l.status === 'pending' && Date.now() - l.t >= demo.delay) { l.status = 'approved'; saveLinks(L); }
+      return l.status === 'approved' ? { status: 'approved', store_name: DEMO[id], currency: 'CUP' } : { status: l.status };
+    },
+    async summary(id) {
+      demoAuth(id);
+      const all = demoSales(id), t0 = new Date(); t0.setHours(0, 0, 0, 0);
+      const m0 = new Date(t0.getFullYear(), t0.getMonth(), 1), sum = a => a.reduce((s, x) => s + x.total, 0);
+      const today = all.filter(s => new Date(s.created_at) >= t0), month = all.filter(s => new Date(s.created_at) >= m0);
+      return { today_total: sum(today), today_count: today.length, month_total: sum(month), month_count: month.length };
+    },
+    async sales(id, token, before, limit) {
+      demoAuth(id);
+      let a = demoSales(id);
+      if (before) a = a.filter(s => s.created_at < before);
+      return a.slice(0, Math.min(Math.max(limit || 50, 1), 100));
+    },
+    async unlink(id) { const L = links(); delete L[id]; saveLinks(L); return { status: 'none' }; }
+  };
+
+  const api = () => live() ? realApi : demoApi;
+  const call = name => (...a) => Biz._fail && name !== 'unlink' ? Promise.reject(new Error(Biz._fail)) : api()[name](...a);
+  return { cfg, live, demo, _fail: null, requestLink: call('requestLink'), linkStatus: call('linkStatus'), summary: call('summary'), sales: call('sales'), unlink: call('unlink') };
+})();
+
+const pluralVentas = n => n === 1 ? '1 venta' : n + ' ventas';
+// Identificador secreto de este teléfono; la tienda aprueba a este "dispositivo"
+function bizToken() {
+  if (!S.deviceToken) {
+    const a = new Uint8Array(24); (window.crypto || window.msCrypto).getRandomValues(a);
+    S.deviceToken = [...a].map(b => b.toString(16).padStart(2, '0')).join(''); save();
+  }
+  return S.deviceToken;
+}
+function bizErr(e) {
+  const m = e && e.message;
+  if (m === 'store_not_found') return 'No existe una tienda con ese ID';
+  if (m === 'too_many_requests') return 'Hay demasiadas solicitudes para esa tienda. Inténtalo más tarde';
+  if (m === 'network') return 'Sin conexión con el servidor';
+  if (m === 'not_ready') return 'El servidor todavía no está preparado (falta ejecutar el SQL en Supabase)';
+  return 'No se pudo verificar la tienda';
+}
+
+/* --- Vincular una tienda (pide el ID y espera la confirmación de la app de tienda) --- */
+function openBizLink() {
+  if (S.bizPending) return bizWaiting();
+  openSheet('Cuenta Empresarial', `
+    <p class="muted" style="line-height:1.5;margin:-4px 0 16px">Escribe el ID de 8 dígitos de tu tienda. La app de la tienda tendrá que confirmar la solicitud.</p>
+    <div class="field"><label>ID de la tienda</label>
+      <input id="biz-id" class="inp" inputmode="numeric" maxlength="8" placeholder="00000000" autocomplete="off" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,8)">
+      ${Biz.live() ? '' : '<div class="hint">Modo demostración: usa el ID 12345678.</div>'}</div>
+    <button class="btn" id="biz-go" onclick="bizRequest()">Solicitar acceso</button>`);
+}
+async function bizRequest() {
+  const id = $('#biz-id').value.trim();
+  if (!/^\d{8}$/.test(id)) return toast('El ID debe tener 8 dígitos');
+  if (S.stores.some(s => s.storeId === id)) return toast('Esa tienda ya está vinculada');
+  const btn = $('#biz-go'); btn.disabled = true; btn.textContent = 'Verificando…';
+  const code = String(Math.floor(1000 + Math.random() * 9000));
+  try {
+    const r = await Biz.requestLink(id, bizToken(), code, 'Wallet');
+    if (r && r.status === 'approved') return bizApproved(id, r.store_name, r.currency);
+    S.bizPending = { storeId: id, code, at: Date.now() }; save(); render();
+    bizWaiting();
+  } catch (e) {
+    const b = $('#biz-go'); if (b) { b.disabled = false; b.textContent = 'Solicitar acceso'; }
+    toast(bizErr(e));
+  }
+}
+function bizWaiting() {
+  const p = S.bizPending; if (!p) return openBizLink();
+  openSheet('Esperando confirmación', `
+    <div class="biz-wait">
+      <div class="spinner"></div>
+      <div class="muted small">Código de verificación</div>
+      <div class="biz-code">${esc(p.code)}</div>
+      <p class="muted" style="line-height:1.5">Abre la app de tu tienda y confirma la solicitud del ID <b>${esc(p.storeId)}</b>. Comprueba que el código sea el mismo.</p>
+      ${Biz.live() ? '' : '<p class="hint">Modo demostración: se confirma solo en unos segundos.</p>'}
+    </div>
+    <button class="btn ghost" onclick="bizCancel()">Cancelar solicitud</button>`);
+  bizPollStart();
+}
+function bizCancel() {
+  const p = S.bizPending; S.bizPending = null; save(); bizPollStop(); closeSheet(); render();
+  if (p) Biz.unlink(p.storeId, bizToken()).catch(() => {});
+  toast('Solicitud cancelada');
+}
+function bizClearPending(msg) {
+  S.bizPending = null; save(); bizPollStop();
+  if (sheetOpen()) closeSheet();
+  render(); toast(msg);
+}
+function bizApproved(storeId, name, currency) {
+  S.bizPending = null; bizPollStop();
+  const st = { id: uid(), storeId, name: name || ('Tienda ' + storeId), currency: currency || 'CUP', linkedAt: Date.now(), cache: null };
+  S.stores.push(st); save(); closeSheet(); render(); toast('Tienda vinculada');
+  openStore(st.id);
+}
+// Mientras hay una solicitud pendiente, se pregunta cada pocos segundos si la tienda ya confirmó
+let bizTimer = null, bizBusy = false;
+function bizPollStart() { if (!bizTimer) bizTimer = setInterval(bizCheck, 3000); bizCheck(); }
+function bizPollStop() { clearInterval(bizTimer); bizTimer = null; }
+async function bizCheck() {
+  const p = S.bizPending;
+  if (!p) return bizPollStop();
+  if (Date.now() - p.at > 15 * 60 * 1000) return bizClearPending('La solicitud caducó. Vuelve a intentarlo');
+  if (bizBusy) return;
+  bizBusy = true;
+  try {
+    const r = await Biz.linkStatus(p.storeId, bizToken());
+    if (!S.bizPending || S.bizPending.storeId !== p.storeId) return;   // la cancelaron mientras tanto
+    if (r.status === 'approved') bizApproved(p.storeId, r.store_name, r.currency);
+    else if (r.status === 'rejected' || r.status === 'revoked') bizClearPending('La tienda rechazó la solicitud');
+    else if (r.status === 'expired' || r.status === 'none') bizClearPending('La solicitud ya no existe. Vuelve a intentarlo');
+  } catch (e) { /* sin conexión: se vuelve a intentar */ }
+  finally { bizBusy = false; }
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S.bizPending) bizCheck(); });
+
+/* --- Inicio: sección "Mis Tiendas" --- */
+function bizSection() {
+  if (!S.stores.length && !S.bizPending) return '';
+  const p = S.bizPending;
+  return `<div class="sec-head"><h2>Mis Tiendas</h2></div>
+  <div class="biz-list">
+    ${p ? `<button class="biz-card pend" onclick="bizWaiting()"><span class="biz-ic">${I.store}</span><span class="grow"><div class="biz-n">Tienda ${esc(p.storeId)}</div><div class="muted small">Esperando confirmación · código ${esc(p.code)}</div></span><span class="spinner sm"></span></button>` : ''}
+    ${S.stores.map(st => { const sm = st.cache && st.cache.summary; return `<button class="biz-card" onclick="openStore('${st.id}')"><span class="biz-ic">${I.store}</span><span class="grow"><div class="biz-n">${esc(st.name)}</div><div class="muted small">${sm ? 'Hoy: ' + money(+sm.today_total, st.currency) + ' · ' + pluralVentas(+sm.today_count) : 'Toca para ver las ventas'}</div></span>${I.chevR}</button>`; }).join('')}
+  </div>`;
+}
+
+/* --- Pantalla aparte de la tienda: resumen y lista de ventas --- */
+function openStore(id) {
+  const st = S.stores.find(s => s.id === id); if (!st) return;
+  UI.storeId = id; UI.biz = { loading: true, error: '', more: !!(st.cache && st.cache.sales.length >= 50) };
+  go('store'); bizLoad();
+}
+async function bizLoad() {
+  const st = S.stores.find(s => s.id === UI.storeId); if (!st) return;
+  UI.biz = Object.assign(UI.biz || {}, { loading: true, error: '' });
+  try {
+    const [sm, page] = await Promise.all([Biz.summary(st.storeId, bizToken()), Biz.sales(st.storeId, bizToken(), null, 50)]);
+    st.cache = { summary: sm, sales: page, at: Date.now() };
+    UI.biz.more = page.length >= 50;
+  } catch (e) {
+    UI.biz.error = e.message === 'not_authorized' ? 'revoked' : e.message === 'network' ? 'offline' : 'server';
+  }
+  UI.biz.loading = false; save();
+  if (UI.screen === 'store' && UI.storeId === st.id) render();
+}
+function bizRefresh() { if (!(UI.biz && UI.biz.loading)) { UI.biz = Object.assign(UI.biz || {}, { loading: true }); render(); bizLoad(); } }
+async function bizMore() {
+  const st = S.stores.find(s => s.id === UI.storeId), list = st && st.cache && st.cache.sales, last = list && list[list.length - 1];
+  if (!last || UI.biz.moreLoading) return;
+  UI.biz.moreLoading = true; render();
+  try {
+    const page = await Biz.sales(st.storeId, bizToken(), last.created_at, 50), seen = new Set(list.map(s => s.id));
+    page.forEach(s => { if (!seen.has(s.id)) list.push(s); });
+    UI.biz.more = page.length >= 50 && list.length < 400; save();
+  } catch (e) { toast(bizErr(e)); }
+  UI.biz.moreLoading = false;
+  if (UI.screen === 'store') render();
+}
+function saleRow(s, cur) {
+  const items = s.items || [];
+  const title = items.length ? items.map(i => (i.qty > 1 ? i.qty + '× ' : '') + i.name).join(', ') : (s.note || 'Venta');
+  const sub = hhmm(s.created_at) + (s.payment_method ? ' · ' + s.payment_method : '');
+  return `<button class="tx sale" onclick="openSale('${esc(s.id)}')">
+    <div class="tx-ic" style="background:#4ade8022">🛒</div>
+    <div class="tx-main"><div class="tx-t">${esc(title)}</div><div class="tx-s">${esc(sub)}</div></div>
+    <div class="tx-r"><div class="tx-a pos">${S.hide ? '••••' : '+' + nf.format(+s.total)}</div></div>
+  </button>`;
+}
+function vStore() {
+  const st = S.stores.find(s => s.id === UI.storeId), B = UI.biz || {};
+  const head = `<header class="top"><button class="icon-btn" onclick="go('home')" aria-label="Volver">${I.back}</button><h1 class="ell">${esc(st ? st.name : 'Tienda')}</h1><button class="icon-btn ${B.loading ? 'spin' : ''}" onclick="bizRefresh()" aria-label="Actualizar ventas">${I.refresh}</button></header>`;
+  if (!st) return head + `<div class="empty">Esta tienda ya no está vinculada.</div>`;
+  if (B.error === 'revoked') return head + `<div class="panel" style="text-align:center"><div style="font-size:34px;margin-bottom:8px">🔒</div><div style="font-weight:600;margin-bottom:6px">La tienda ya no te da acceso</div><p class="muted" style="line-height:1.5;margin-bottom:16px">La app de la tienda cerró esta vinculación. Puedes quitarla de Wallet y pedir acceso de nuevo.</p><button class="btn danger" onclick="bizUnlinkAsk()">Quitar tienda</button></div>`;
+  const cur = st.currency || 'CUP', c = st.cache, sm = c && c.summary, list = (c && c.sales) || [];
+  const demo = Biz.live() ? '' : `<div class="biz-demo">Modo demostración · ventas de ejemplo</div>`;
+  const note = B.error ? `<div class="biz-note">${B.error === 'offline' ? 'Sin conexión. Mostrando lo último guardado.' : 'No se pudieron actualizar las ventas.'} <button class="link" onclick="bizRefresh()">Reintentar</button></div>` : '';
+  const tiles = sm ? `<div class="tiles">
+    <div class="tile"><div class="muted small">Hoy</div><div class="v pos">${short(+sm.today_total)}</div><div class="muted small">${cur} · ${pluralVentas(+sm.today_count)}</div></div>
+    <div class="tile"><div class="muted small">Este mes</div><div class="v">${short(+sm.month_total)}</div><div class="muted small">${cur} · ${pluralVentas(+sm.month_count)}</div></div>
+  </div>` : '';
+  let body;
+  if (!list.length) body = `<div class="empty">${B.loading ? 'Cargando ventas…' : c ? 'Esta tienda todavía no tiene ventas.' : 'No hay datos todavía.'}</div>`;
+  else {
+    const g = {}; list.forEach(s => (g[dayKey(s.created_at)] = g[dayKey(s.created_at)] || []).push(s));
+    body = Object.keys(g).sort().reverse().map(k => `<div class="day row-between"><span>${dayLabel(k)}</span><span>${money(g[k].reduce((a, s) => a + (+s.total || 0), 0), cur)}</span></div>${g[k].map(s => saleRow(s, cur)).join('')}`).join('');
+  }
+  const more = B.more ? `<button class="btn ghost" style="margin-top:14px" ${B.moreLoading ? 'disabled' : ''} onclick="bizMore()">${B.moreLoading ? 'Cargando…' : 'Cargar más ventas'}</button>` : '';
+  const stamp = c && c.at ? `<div class="muted small" style="text-align:center;margin-top:16px">Actualizado ${dayLabel(dayKey(c.at)).toLowerCase()}, ${hhmm(c.at)}</div>` : '';
+  return `${head}${demo}${note}${tiles}
+  <div class="sec-head"><h2>Ventas</h2></div>${body}${more}${stamp}
+  <button class="btn danger" style="margin-top:22px" onclick="bizUnlinkAsk()">Quitar tienda de Wallet</button>`;
+}
+function openSale(sid) {
+  const st = S.stores.find(s => s.id === UI.storeId), s = st && st.cache && st.cache.sales.find(x => x.id === sid); if (!s) return;
+  const cur = st.currency || 'CUP', d = new Date(s.created_at), items = s.items || [];
+  openSheet('Venta', `
+    <div style="text-align:center;margin:-6px 0 18px"><div class="tx-a pos" style="font-size:30px">${money(+s.total, cur)}</div>
+      <div class="muted small">${dayLabel(dayKey(d))}, ${hhmm(d)}${s.payment_method ? ' · ' + esc(s.payment_method) : ''}</div></div>
+    ${items.length ? `<div class="panel" style="padding:4px 16px">${items.map(i => `<div class="row-between" style="padding:11px 0;border-bottom:1px solid var(--line)"><span>${esc(i.qty)} × ${esc(i.name)}</span><span>${money(i.qty * i.price, cur)}</span></div>`).join('')}</div>` : ''}
+    ${s.note ? `<p class="muted" style="margin-top:14px;line-height:1.5">${esc(s.note)}</p>` : ''}`);
+}
+function bizUnlinkAsk() {
+  const st = S.stores.find(s => s.id === UI.storeId); if (!st) return;
+  confirmBox('Se quitará esta tienda de Wallet. Para volver a ver sus ventas tendrás que pedir acceso otra vez y la app de la tienda deberá confirmarlo.', 'Quitar tienda', () => {
+    Biz.unlink(st.storeId, bizToken()).catch(() => {});
+    S.stores = S.stores.filter(s => s.id !== st.id); save(); closeSheet(); go('home'); toast('Tienda quitada');
+  });
+}
+
 /* ====== Inicio ====== */
 save();
 applyAnim();
 render();
+if (S.bizPending) bizPollStart();   // si quedó una solicitud esperando a la tienda, se sigue preguntando
 if (!S.onboarded) setTimeout(onboard, 300);
 setTimeout(() => checkUpdate(true), 2500);
 setTimeout(() => updateStreetRate(true), 3200);
