@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
+    "@capacitor/push-notifications": "^6.0.0",
     "@capacitor/cli": "^6.2.0"
   }
 }
