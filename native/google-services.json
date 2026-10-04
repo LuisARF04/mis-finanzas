@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "777762664157",
+    "project_id": "inventario-wallet",
+    "storage_bucket": "inventario-wallet.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:777762664157:android:f7fe08856dd418a3993534",
+        "android_client_info": {
+          "package_name": "com.misfinanzas.cup"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9muWZZpgg5w-x7tCcnqOdhMmBdf7xmSk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
