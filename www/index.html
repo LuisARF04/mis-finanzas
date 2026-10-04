@@ -657,7 +657,7 @@ const QR = (() => {
 const PALETTE = ['#ff8a5b', '#6fb6ff', '#c77dff', '#4dd4ac', '#ffc542', '#ff6b9a', '#8b7bff'];
 /* ====== Datos (se guardan en el teléfono) ====== */
 function defaults() {
-  return { v: 13, name: '', photo: '', phone: '', onboarded: false, rates: { USD: 400, SQP: 420, MLC: 300 }, eltoqueToken: '', stores: [], bizPending: null, deviceToken: '', cards: [], contacts: [], tx: [], hide: false, anim: true, counter: { cur: 'CUP', counts: {} } };
+  return { v: 14, name: '', photo: '', phone: '', onboarded: false, rates: { USD: 400, SQP: 420, MLC: 300 }, eltoqueToken: '', stores: [], bizPending: null, deviceToken: '', fcmToken: '', cards: [], contacts: [], tx: [], hide: false, anim: true, counter: { cur: 'CUP', counts: {} } };
 }
 // Versión 1 → 2: las tarjetas USDT pasan a tener su propia moneda
 function migrate(d) {
@@ -719,6 +719,8 @@ function migrate(d) {
   if (d.v < 12) { if (!d.phone) d.phone = (d.cards.find(c => c.phone) || {}).phone || ''; d.v = 12; }
   // Versión 12 → 13: tiendas vinculadas (Cuenta Empresarial)
   if (d.v < 13) { d.stores = d.stores || []; d.bizPending = d.bizPending || null; d.deviceToken = d.deviceToken || ''; d.v = 13; }
+  // Versión 13 → 14: notificaciones push de ventas
+  if (d.v < 14) { d.fcmToken = d.fcmToken || ''; d.v = 14; }
   return d;
 }
 let memStore = null;
@@ -863,7 +865,7 @@ let toastT;
 function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2200); }
 
 /* ====== Navegación ====== */
-const APP_VERSION = '2.9.9.7';
+const APP_VERSION = '2.9.9.9';
 
 /* ====== Actualizaciones desde GitHub Releases ====== */
 const GH_REPO = 'LuisARF04/mis-finanzas'; // usuario/repositorio donde se compila el APK
@@ -1956,7 +1958,9 @@ const Biz = (() => {
     linkStatus: (id, token) => rpc('wallet_link_status', { p_store_id: id, p_token: token }),
     summary: (id, token) => rpc('wallet_sales_summary', { p_store_id: id, p_token: token }),
     sales: (id, token, before, limit) => rpc('wallet_get_sales', { p_store_id: id, p_token: token, p_before: before, p_limit: limit }),
-    unlink: (id, token) => rpc('wallet_unlink', { p_store_id: id, p_token: token })
+    unlink: (id, token) => rpc('wallet_unlink', { p_store_id: id, p_token: token }),
+    registerPush: (id, token, fcm) => rpc('wallet_register_push', { p_store_id: id, p_token: token, p_fcm_token: fcm }),
+    registerDevice: (token, fcm) => rpc('wallet_register_device', { p_token: token, p_fcm_token: fcm })
   };
 
   // --- Modo demostración (sin servidor) ---
@@ -2005,7 +2009,7 @@ const Biz = (() => {
       const all = demoSales(id), t0 = new Date(); t0.setHours(0, 0, 0, 0);
       const m0 = new Date(t0.getFullYear(), t0.getMonth(), 1), sum = a => a.reduce((s, x) => s + x.total, 0);
       const today = all.filter(s => new Date(s.created_at) >= t0), month = all.filter(s => new Date(s.created_at) >= m0);
-      return { today_total: sum(today), today_count: today.length, month_total: sum(month), month_count: month.length };
+      return { today_total: sum(today), today_count: today.length, month_total: sum(month), month_count: month.length, total_count: all.length, first_sale_at: all.length ? all[all.length - 1].created_at : null };
     },
     async sales(id, token, before, limit) {
       demoAuth(id);
@@ -2013,12 +2017,14 @@ const Biz = (() => {
       if (before) a = a.filter(s => s.created_at < before);
       return a.slice(0, Math.min(Math.max(limit || 50, 1), 100));
     },
-    async unlink(id) { const L = links(); delete L[id]; saveLinks(L); return { status: 'none' }; }
+    async unlink(id) { const L = links(); delete L[id]; saveLinks(L); return { status: 'none' }; },
+    async registerPush() { return { status: 'ok' }; },   // demostración: no hay servidor real al que avisar
+    async registerDevice() { return { status: 'ok' }; }
   };
 
   const api = () => live() ? realApi : demoApi;
   const call = name => (...a) => Biz._fail && name !== 'unlink' ? Promise.reject(new Error(Biz._fail)) : api()[name](...a);
-  return { cfg, live, demo, _fail: null, requestLink: call('requestLink'), linkStatus: call('linkStatus'), summary: call('summary'), sales: call('sales'), unlink: call('unlink') };
+  return { cfg, live, demo, _fail: null, requestLink: call('requestLink'), linkStatus: call('linkStatus'), summary: call('summary'), sales: call('sales'), unlink: call('unlink'), registerPush: call('registerPush'), registerDevice: call('registerDevice') };
 })();
 
 const pluralVentas = n => n === 1 ? '1 venta' : n + ' ventas';
@@ -2093,6 +2099,30 @@ function bizApproved(storeId, name, currency) {
   const st = { id: uid(), storeId, name: name || ('Tienda ' + storeId), currency: currency || 'CUP', linkedAt: Date.now(), cache: null };
   S.stores.push(st); save(); closeSheet(); render(); toast('Tienda vinculada');
   openStore(st.id);
+  initPush();
+}
+
+/* --- Notificaciones push: ventas, tasa del dólar y nuevas versiones ---
+   Si esta instalación no trae el complemento (falta Firebase, o aún no
+   se configuró), estas funciones no hacen nada, en silencio. Se registra
+   el teléfono SIEMPRE (no solo con una tienda vinculada), porque la tasa
+   y los avisos de versión son generales, no de ninguna tienda. */
+async function initPush() {
+  const PN = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications;
+  if (!PN) return;
+  if (S.fcmToken) return syncPush();   // ya registrado antes: solo confirma con el servidor, sin pedir permiso otra vez
+  try {
+    const perm = await PN.requestPermissions();
+    if (perm.receive !== 'granted' && perm.receive !== 'prompt-with-rationale') return;
+    PN.addListener('registration', t => { S.fcmToken = t.value; save(); syncPush(); });
+    PN.addListener('registrationError', () => {});
+    await PN.register();
+  } catch (e) { /* sin permiso, o esta instalación no lo soporta: se ignora */ }
+}
+function syncPush() {
+  if (!S.fcmToken) return;
+  Biz.registerDevice(bizToken(), S.fcmToken).catch(() => {});                                      // notificaciones generales (tasa, versión)
+  S.stores.forEach(st => Biz.registerPush(st.storeId, bizToken(), S.fcmToken).catch(() => {}));     // + las de cada tienda vinculada
 }
 // Mientras hay una solicitud pendiente, se pregunta cada pocos segundos si la tienda ya confirmó
 let bizTimer = null, bizBusy = false;
@@ -2180,6 +2210,8 @@ function vStore() {
     <div class="tile"><div class="muted small">Hoy</div><div class="v pos">${short(+sm.today_total)}</div><div class="muted small">${cur} · ${pluralVentas(+sm.today_count)}</div></div>
     <div class="tile"><div class="muted small">Este mes</div><div class="v">${short(+sm.month_total)}</div><div class="muted small">${cur} · ${pluralVentas(+sm.month_count)}</div></div>
   </div>` : '';
+  // Cuántas ventas hay registradas en total y desde cuándo (si el servidor ya lo informa)
+  const hist = sm && sm.total_count != null ? `<div class="muted small" style="text-align:center;margin:12px 0 -4px">${pluralVentas(+sm.total_count)} registradas${sm.first_sale_at ? ' · la más antigua, del ' + new Date(sm.first_sale_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</div>` : '';
   let body;
   if (!list.length) body = `<div class="empty">${B.loading ? 'Cargando ventas…' : c ? 'Esta tienda todavía no tiene ventas.' : 'No hay datos todavía.'}</div>`;
   else {
@@ -2188,7 +2220,7 @@ function vStore() {
   }
   const more = B.more ? `<button class="btn ghost" style="margin-top:14px" ${B.moreLoading ? 'disabled' : ''} onclick="bizMore()">${B.moreLoading ? 'Cargando…' : 'Cargar más ventas'}</button>` : '';
   const stamp = c && c.at ? `<div class="muted small" style="text-align:center;margin-top:16px">Actualizado ${dayLabel(dayKey(c.at)).toLowerCase()}, ${hhmm(c.at)}</div>` : '';
-  return `${head}${demo}${note}${tiles}
+  return `${head}${demo}${note}${tiles}${hist}
   <div class="sec-head"><h2>Ventas</h2></div>${body}${more}${stamp}
   <button class="btn danger" style="margin-top:22px" onclick="bizUnlinkAsk()">Quitar tienda de Wallet</button>`;
 }
@@ -2214,6 +2246,7 @@ save();
 applyAnim();
 render();
 if (S.bizPending) bizPollStart();   // si quedó una solicitud esperando a la tienda, se sigue preguntando
+initPush();   // si hay tiendas vinculadas, intenta tener listas sus notificaciones de venta
 if (!S.onboarded) setTimeout(onboard, 300);
 setTimeout(() => checkUpdate(true), 2500);
 setTimeout(() => updateStreetRate(true), 3200);
