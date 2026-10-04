@@ -1,0 +1,47 @@
+name: Avisar la tasa del dólar
+
+on:
+  schedule:
+    # 13:00 UTC = 9:00 AM en Cuba mientras está en horario de verano (hasta
+    # el 1 de noviembre de 2026). Después de ese cambio de hora, para que
+    # siga siendo las 9:00 AM hay que poner '0 14 * * *' en vez de esto.
+    - cron: '0 13 * * *'
+  workflow_dispatch:
+
+jobs:
+  notify-rate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Mandar la notificación
+        env:
+          BROADCAST_SECRET: ${{ secrets.BROADCAST_SECRET }}
+        run: |
+          if [ -z "$BROADCAST_SECRET" ]; then
+            echo "Falta el secreto BROADCAST_SECRET (Settings -> Secrets and variables -> Actions)."
+            exit 1
+          fi
+          SUPABASE_URL=$(grep -oP "const BIZ_URL = '\K[^']+" www/index.html)
+          if [ -z "$SUPABASE_URL" ]; then
+            echo "No encontre BIZ_URL en www/index.html (¿todavia no conectaste Supabase?)."
+            exit 0
+          fi
+          if [ ! -f rates.json ]; then
+            echo "Todavia no existe rates.json (el otro robot no ha corrido). Nada que avisar."
+            exit 0
+          fi
+
+          USD=$(python3 -c "import json;print('%.2f' % json.load(open('rates.json'))['usd'])")
+          echo "Tasa a avisar: 1 USD = $USD CUP"
+
+          http_code=$(curl -s -o /tmp/resp.json -w "%{http_code}" -X POST "$SUPABASE_URL/functions/v1/broadcast" \
+            -H "Authorization: Bearer $BROADCAST_SECRET" \
+            -H "Content-Type: application/json" \
+            -d "{\"title\":\"Tasa del dólar hoy\",\"body\":\"1 USD = $USD CUP (el toque, mercado informal)\",\"filter\":\"notify_rate\"}")
+          echo "Codigo de respuesta: $http_code"
+          cat /tmp/resp.json
+          if [ "$http_code" != "200" ]; then
+            echo "La funcion broadcast no respondio con exito."
+            exit 1
+          fi

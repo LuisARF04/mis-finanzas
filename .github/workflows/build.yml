@@ -69,6 +69,33 @@ jobs:
 
       # Número de versión que sube en cada compilación
       # Toma el número de APP_VERSION del index.html (el mismo que sale en Ajustes)
+      # Notificaciones push cuando se registra una venta (Firebase). Mientras no
+      # exista native/google-services.json (se agrega junto con la dependencia
+      # en package.json, cuando configures Firebase), este paso se salta solo
+      # y la app se compila exactamente igual que hoy, sin notificaciones.
+      - name: Agregar notificaciones push (Firebase)
+        id: push
+        continue-on-error: true
+        run: |
+          set -e
+          if [ ! -f native/google-services.json ]; then
+            echo "Sin native/google-services.json todavia: se omite este paso."
+            exit 0
+          fi
+          cp native/google-services.json android/app/google-services.json
+          python3 scripts/add_push_notifications.py android/build.gradle android/app/build.gradle
+          cd android
+          chmod +x gradlew
+          ./gradlew :app:compileReleaseJavaWithJavac
+
+      - name: Quitar notificaciones push (solo si no compiló)
+        if: steps.push.outcome == 'failure'
+        run: |
+          rm -f android/app/google-services.json
+          sed -i "/com.google.gms:google-services/d" android/build.gradle
+          sed -i "/com.google.gms.google-services/d" android/app/build.gradle
+          echo "AVISO: las notificaciones push no compilaron; la app se construye sin esa función."
+
       - name: Versión
         run: |
           VER=$(grep -oP "APP_VERSION = '\K[^']+" www/index.html)
@@ -102,3 +129,42 @@ jobs:
           tag_name: v${{ env.VER }}-${{ github.run_number }}
           name: Wallet ${{ env.VER }}
           files: Wallet.apk
+
+      # Avisa de la versión nueva solo UNA vez por versión (guarda la última
+      # avisada en un archivo del propio repositorio). Si falla el aviso,
+      # no tumba la compilación: el APK ya quedó publicado igual.
+      - name: Avisar la versión nueva
+        continue-on-error: true
+        env:
+          BROADCAST_SECRET: ${{ secrets.BROADCAST_SECRET }}
+        run: |
+          mkdir -p .github/state
+          ARCHIVO=.github/state/ultima_version_avisada.txt
+          ANTERIOR=$(cat "$ARCHIVO" 2>/dev/null || echo "")
+          if [ "$ANTERIOR" = "$VER" ]; then
+            echo "La version $VER ya se habia avisado antes; no se repite."
+            exit 0
+          fi
+          if [ -z "$BROADCAST_SECRET" ]; then
+            echo "Falta el secreto BROADCAST_SECRET; no se puede avisar todavia."
+            exit 0
+          fi
+          SUPABASE_URL=$(grep -oP "const BIZ_URL = '\K[^']+" www/index.html)
+          if [ -z "$SUPABASE_URL" ]; then
+            echo "No encontre BIZ_URL en www/index.html (¿todavia no conectaste Supabase?)."
+            exit 0
+          fi
+
+          http_code=$(curl -s -o /tmp/resp.json -w "%{http_code}" -X POST "$SUPABASE_URL/functions/v1/broadcast" \
+            -H "Authorization: Bearer $BROADCAST_SECRET" \
+            -H "Content-Type: application/json" \
+            -d "{\"title\":\"Wallet se actualizó\",\"body\":\"Ya está disponible la versión $VER. Entra a Ajustes para buscarla.\",\"filter\":\"notify_update\"}")
+          echo "Codigo de respuesta: $http_code"
+          cat /tmp/resp.json
+
+          echo "$VER" > "$ARCHIVO"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$ARCHIVO"
+          git commit -m "Version avisada: $VER" || true
+          git push || true
