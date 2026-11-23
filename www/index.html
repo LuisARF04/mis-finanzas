@@ -15,7 +15,7 @@
   --font:'Urbanist',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{min-height:100%}
+html,body{height:100%;overflow:hidden}
 html{touch-action:manipulation;background:var(--bg);overscroll-behavior:none}
 body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(120% 50% at 50% 0%,#202632 0%,var(--bg) 70%)}
 body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
@@ -23,7 +23,9 @@ button,input,select{font:inherit;color:inherit}
 button{background:none;border:0;cursor:pointer}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 svg{display:block}
-.app{max-width:480px;margin:0 auto;overflow-x:clip;padding:calc(env(safe-area-inset-top,0px) + 16px) 18px calc(env(safe-area-inset-bottom,0px) + 120px)}
+/* El nav vive fuera del área que hace scroll (es hermano flex de .app, no "fixed" sobre un documento que se desplaza), así nunca se mueve al hacer scroll, sin importar cuánto se desplace el resto */
+#shell{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+.app{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;max-width:480px;width:100%;margin:0 auto;overflow-x:clip;padding:calc(env(safe-area-inset-top,0px) + 16px) 18px 14px}
 
 /* Encabezado */
 .top{display:flex;align-items:center;gap:12px;margin-bottom:20px}
@@ -55,31 +57,22 @@ svg{display:block}
 .eye svg{width:20px;height:20px}
 .delta{font-size:14px;margin-top:4px}
 .pos{color:var(--pos)}.neg{color:var(--neg)}
-.sec-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:28px 0 14px}
-.sec-head h2{font-size:22px;font-weight:600;white-space:nowrap}
-.sec-head .chip-btn,.sec-head .link{flex-shrink:0}
-@media (max-width:419px){.sec-head .chip-btn svg{display:none}.sec-head .chip-btn{padding:6px 11px;font-size:12.5px}.sec-left .sc-toggle{height:26px;padding:0 6px 0 9px}.sec-left .sc-toggle svg{width:13px;height:13px}}
-@media (max-width:389px){.sec-head h2{font-size:19px}.sec-head .chip-btn{padding:6px 10px;font-size:12px}}
-@media (max-width:359px){.sec-head h2{font-size:18px}.sec-head .chip-btn{padding:6px 9px;font-size:11.5px}.sec-left .sc-toggle{padding:0 5px 0 8px}}
-@media (max-width:339px){.sec-head{flex-wrap:wrap;row-gap:10px}.sec-head .chip-btn{margin-left:auto}}
+.sec-head{display:flex;justify-content:space-between;align-items:center;margin:28px 0 14px}
+.sec-head h2{font-size:24px;font-weight:600}
 .link{color:var(--accent);font-size:14px;font-weight:600}
 
 /* Pila de tarjetas (como la foto) */
 .stack{display:flex;flex-direction:column}
-.stack-card{--base:hsl(220 13% calc(17% + var(--i) * 3.5%));position:relative;overflow:hidden;border-radius:24px;padding:16px 18px 32px;margin-top:-18px;background:linear-gradient(135deg,color-mix(in srgb,var(--bc) 30%,var(--base)) 0%,var(--base) 65%);background-origin:border-box;background-repeat:no-repeat;border:1px solid var(--line);box-shadow:0 -8px 18px rgba(0,0,0,.28);cursor:pointer}
+.stack-card{--base:hsl(220 13% calc(17% + var(--i) * 3.5%));position:relative;overflow:hidden;border-radius:24px;padding:16px 18px 32px;margin-top:-18px;background:linear-gradient(135deg,color-mix(in srgb,var(--bc) 30%,var(--base)) 0%,var(--base) 65%);border:1px solid var(--line);box-shadow:0 -8px 18px rgba(0,0,0,.28);cursor:pointer}
 .stack-card:first-child{margin-top:0}
 .stack-card.front{padding-bottom:20px}
+.stack.full .stack-card{margin-top:12px}
+.stack.full .stack-card:first-child{margin-top:0}
 .sc-row{display:flex;align-items:center;gap:12px}
 .sc-id{flex:1;min-width:0}
 .sc-name{display:flex;align-items:center;font-weight:600;font-size:15px;min-width:0}
 .sc-name .ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sc-sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
-.sc-toggle{display:flex;align-items:center;gap:3px;height:28px;padding:0 8px 0 11px;border-radius:14px;background:rgba(255,255,255,.09);color:var(--text);font-size:12.5px;font-weight:700;flex-shrink:0;transition:background .15s,color .15s}
-.sc-toggle svg{width:14px;height:14px;transform:rotate(90deg);transition:transform .2s}
-.sc-toggle.open svg{transform:rotate(-90deg)}
-.sc-toggle:active{background:var(--accent);color:var(--accent-ink)}
-.sec-left{display:flex;align-items:center;gap:8px;min-width:0}
-.sec-left .sc-toggle{background:var(--surface2);border:1px solid var(--line)}
 .acc-check{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--surface3);display:grid;place-items:center;flex-shrink:0;color:var(--accent-ink);transition:background .15s,border-color .15s,transform .1s}
 .acc-check:active{transform:scale(.88)}
 .acc-check svg{width:14px;height:14px}
@@ -118,7 +111,7 @@ svg{display:block}
 .brand-opt .bname{font-size:12px}
 
 /* Tarjetas grandes */
-.bigcard{--bc:#888;border-radius:26px;padding:18px;margin-bottom:14px;background:linear-gradient(135deg,color-mix(in srgb,var(--bc) 28%,var(--surface)) 0%,var(--surface) 72%);background-origin:border-box;background-repeat:no-repeat;border:1px solid var(--line);position:relative;overflow:hidden;min-height:176px;display:flex;flex-direction:column;justify-content:space-between}
+.bigcard{--bc:#888;border-radius:26px;padding:18px;margin-bottom:14px;background:linear-gradient(135deg,color-mix(in srgb,var(--bc) 28%,var(--surface)) 0%,var(--surface) 72%);border:1px solid var(--line);position:relative;overflow:hidden;min-height:176px;display:flex;flex-direction:column;justify-content:space-between}
 .bigcard.click{cursor:pointer}
 .bigcard::after{content:'';position:absolute;right:-50px;top:-50px;width:170px;height:170px;border-radius:50%;background:rgba(255,255,255,.04);pointer-events:none}
 .bc-num{font-size:18px;letter-spacing:1.5px;margin:18px 0 12px;display:flex;align-items:center;gap:10px;position:relative;z-index:1;word-break:break-all}
@@ -193,7 +186,7 @@ input[type=datetime-local].inp{color-scheme:dark}
 .detail-amt{text-align:center;font-size:32px;font-weight:600;margin-bottom:18px}
 
 /* Barra inferior (estilo foto 3) */
-.nav{position:fixed;left:0;right:0;bottom:0;padding:14px 10px calc(env(safe-area-inset-bottom,0px) + 14px);display:flex;gap:8px;justify-content:center;align-items:center;background:linear-gradient(to top,var(--bg) 55%,rgba(20,22,27,0));z-index:40}
+.nav{flex:none;position:relative;padding:14px 10px calc(env(safe-area-inset-bottom,0px) + 14px);display:flex;gap:8px;justify-content:center;align-items:center;background:var(--bg);z-index:40}
 .fab{width:52px;height:52px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;box-shadow:0 8px 24px rgba(184,255,41,.28);flex-shrink:0;transition:transform .1s}
 .fab:active{transform:scale(.92)}
 .fab svg{width:24px;height:24px}
@@ -208,17 +201,16 @@ input[type=datetime-local].inp{color-scheme:dark}
 @keyframes navIcon{from{transform:scale(.8) rotate(-8deg)}to{transform:none}}
 
 /* Contador de billetes */
-.seg2cur{display:grid;grid-template-columns:1fr 1fr;background:var(--surface2);border-radius:14px;padding:4px;margin-bottom:14px}
-.seg2cur button{padding:10px;border-radius:10px;color:var(--muted);font-weight:600}
-.seg2cur button.on{background:var(--accent);color:var(--accent-ink)}
-.cnt-total{margin-bottom:18px;transition:background .2s}
+.cnt-total{margin-bottom:12px;transition:background .2s}
 .cnt-total.has{background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
-.cnt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.cnt-card{background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:12px;transition:border-color .15s,background .15s}
+.cnt-total-amt{display:flex;align-items:baseline;gap:6px;font-size:20px;font-weight:600}
+.cnt-total-amt small{font-size:13px;color:var(--muted);font-weight:500}
+.cnt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.cnt-card{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:8px 6px;text-align:center;transition:border-color .15s,background .15s}
 .cnt-card.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
-.cnt-lbl{font-weight:600;font-size:14px}
-.cnt-qty{width:100%;text-align:center;font-size:17px;font-weight:600;padding:10px;margin-top:8px}
-.cnt-sub{font-size:11.5px;color:var(--muted);margin-top:6px;min-height:14px}
+.cnt-lbl{font-weight:600;font-size:12px}
+.cnt-qty{width:100%;text-align:center;font-size:14px;font-weight:600;padding:7px 2px;margin-top:6px}
+.cnt-sub{font-size:10px;color:var(--muted);margin-top:4px;min-height:12px;line-height:1.2}
 
 /* Estadísticas */
 .month-nav{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px;margin-bottom:16px}
@@ -281,7 +273,7 @@ input[type=datetime-local].inp{color-scheme:dark}
 .cg-inner{overflow:hidden;min-height:0;visibility:hidden;transition:visibility 0s .24s}
 .cgroup.open .cg-inner{visibility:visible;transition-delay:0s}
 .cg-pad{padding:2px 12px 12px;display:flex;flex-direction:column;gap:10px}
-.pcard{--bc:#888;position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;padding:14px;border-radius:20px;background:var(--surface2);background:linear-gradient(135deg,color-mix(in srgb,var(--bc) 20%,var(--surface2)),var(--surface2) 75%);background-origin:border-box;background-repeat:no-repeat;border:1px solid var(--line);cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .1s}
+.pcard{--bc:#888;position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;padding:14px;border-radius:20px;background:var(--surface2);background:linear-gradient(135deg,color-mix(in srgb,var(--bc) 20%,var(--surface2)),var(--surface2) 75%);border:1px solid var(--line);cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .1s}
 .pcard:active{transform:scale(.985)}
 .pcard .bicon{width:42px;height:42px;border-radius:13px}
 .pcard .bicon svg{width:22px;height:22px}
@@ -295,9 +287,6 @@ input[type=datetime-local].inp{color-scheme:dark}
 .qr-btn{position:absolute;top:7px;right:7px;width:30px;height:30px;border-radius:10px;background:rgba(255,255,255,.09);color:var(--text);display:grid;place-items:center;transition:background .12s,color .12s,transform .1s}
 .qr-btn svg{width:16px;height:16px}
 .qr-btn:active{background:var(--accent);color:var(--accent-ink);transform:scale(.92)}
-.chk-row{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;border-radius:14px;background:var(--surface2);border:1px solid var(--line);font-weight:600;font-size:14px;color:var(--muted);text-align:left;transition:color .15s}
-.chk-row.on{color:var(--text)}
-.chk-row .acc-check{pointer-events:none}
 .add-card{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:18px;border:1.5px dashed var(--surface3);color:var(--muted);font-weight:600;font-size:15px}
 .add-card svg{width:18px;height:18px}
 .add-card:active{background:var(--surface2)}
@@ -311,7 +300,6 @@ input[type=datetime-local].inp{color-scheme:dark}
 /* ====== Animaciones ====== */
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes rowIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
 @keyframes cardIn{from{opacity:.6;transform:translateY(-16px) scale(.98)}to{opacity:1;transform:none}}
 @keyframes flash{from{background:rgba(184,255,41,.16)}to{background:transparent}}
 @keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
@@ -323,7 +311,6 @@ input[type=datetime-local].inp{color-scheme:dark}
 .intro>*:nth-child(2){animation-delay:.03s}.intro>*:nth-child(3){animation-delay:.06s}
 .intro>*:nth-child(4){animation-delay:.08s}.intro>*:nth-child(5){animation-delay:.1s}.intro>*:nth-child(6){animation-delay:.12s}
 .stack-card.pop{animation:cardIn .22s cubic-bezier(.2,.8,.2,1)}
-.stack-card.rowin{animation:rowIn .22s cubic-bezier(.2,.8,.2,1) calc(var(--i) * 35ms) backwards}
 .stack-card.pop .sc-front{animation:fadeIn .2s .04s both}
 .tx.new{animation:fadeUp .2s cubic-bezier(.2,.8,.2,1),flash .9s .1s ease-out}
 #histList{animation:fadeIn .14s both}
@@ -344,29 +331,10 @@ input[type=datetime-local].inp{color-scheme:dark}
 
 /* Se apagan solo si el usuario las desactiva en Ajustes */
 html.no-anim *,html.no-anim *::before,html.no-anim *::after{transition:none!important;animation:none!important}
-
-/* Tienda (Cuenta Empresarial) */
-@keyframes spin{to{transform:rotate(360deg)}}
-.spinner{width:34px;height:34px;border-radius:50%;border:3px solid var(--surface3);border-top-color:var(--accent);animation:spin .9s linear infinite;flex-shrink:0}
-.spinner.sm{width:20px;height:20px;border-width:2.5px}
-.icon-btn.spin svg{animation:spin .8s linear infinite}
-.top h1.ell{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.biz-list{display:flex;flex-direction:column;gap:10px}
-.biz-card{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;border-radius:22px;background:var(--surface);border:1px solid var(--line);text-align:left}
-.biz-card.pend{border-style:dashed}
-.biz-card .grow{min-width:0}
-.biz-card>svg{width:18px;height:18px;color:var(--muted);flex-shrink:0}
-.biz-ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:rgba(184,255,41,.12);color:var(--accent);flex-shrink:0}
-.biz-ic svg{width:22px;height:22px}
-.biz-n{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tx.sale .tx-t{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.biz-wait{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:6px 0 18px}
-.biz-code{font-size:44px;font-weight:700;letter-spacing:10px;padding-left:10px;font-variant-numeric:tabular-nums}
-.biz-demo{margin:-6px 0 14px;padding:8px 12px;border-radius:12px;background:rgba(255,193,7,.12);color:#ffd166;font-size:12.5px;font-weight:600;text-align:center}
-.biz-note{margin:-6px 0 14px;padding:10px 12px;border-radius:12px;background:var(--surface2);color:var(--muted);font-size:13px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 </style>
 </head>
 <body>
+<div id="shell">
 <main class="app" id="main"></main>
 
 <nav class="nav">
@@ -375,6 +343,7 @@ html.no-anim *,html.no-anim *::before,html.no-anim *::after{transition:none!impo
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
   </button>
 </nav>
+</div>
 
 <div class="overlay" id="overlay" onclick="overlayTap()"></div>
 <div class="sheet" id="sheet" role="dialog"></div>
@@ -462,8 +431,6 @@ const I = {
   x: ic('<path d="M18 6 6 18M6 6l12 12"/>'),
   count: ic('<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="7.5" cy="9" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="9" r="1.3" fill="currentColor" stroke="none"/><circle cx="16.5" cy="9" r="1.3" fill="currentColor" stroke="none"/><circle cx="7.5" cy="15" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r="1.3" fill="currentColor" stroke="none"/><circle cx="16.5" cy="15" r="1.3" fill="currentColor" stroke="none"/>'),
   trash: ic('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'),
-  store: ic('<path d="M4 9.5 5.5 4h13L20 9.5"/><path d="M4 9.5a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0 2.7 2.7 0 0 0 5.3 0"/><path d="M5 12.5V20h14v-7.5"/><path d="M10 20v-4.5h4V20"/>'),
-  refresh: ic('<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>'),
   qr: ic('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h2.5v2.5H14zM20.5 14v2.5M14 20.5h2.5M18.5 18.5H21v2.5h-2.5z"/>'),
   userPlus: ic('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/>'),
   check: ic('<path d="M20 6 9 17l-5-5"/>'),
@@ -657,7 +624,7 @@ const QR = (() => {
 const PALETTE = ['#ff8a5b', '#6fb6ff', '#c77dff', '#4dd4ac', '#ffc542', '#ff6b9a', '#8b7bff'];
 /* ====== Datos (se guardan en el teléfono) ====== */
 function defaults() {
-  return { v: 14, name: '', photo: '', phone: '', onboarded: false, rates: { USD: 400, SQP: 420, MLC: 300 }, eltoqueToken: '', stores: [], bizPending: null, deviceToken: '', fcmToken: '', cards: [], contacts: [], tx: [], hide: false, anim: true, counter: { cur: 'CUP', counts: {} } };
+  return { v: 12, name: '', photo: '', onboarded: false, rates: { USD: 400, SQP: 420, MLC: 300 }, eltoqueToken: '', cards: [], contacts: [], tx: [], hide: false, anim: true, fullAccList: false, counter: { cur: 'CUP', counts: {} } };
 }
 // Versión 1 → 2: las tarjetas USDT pasan a tener su propia moneda
 function migrate(d) {
@@ -715,12 +682,8 @@ function migrate(d) {
   if (d.v < 10) { d.cards.forEach(c => { if (c.included === undefined) c.included = true; }); d.v = 10; }
   // Versión 10 → 11: token opcional para actualizar la tasa de El Toque
   if (d.v < 11) { if (d.eltoqueToken === undefined) d.eltoqueToken = ''; d.v = 11; }
-  // Versión 11 → 12: mi móvil (va dentro del QR de mis tarjetas)
-  if (d.v < 12) { if (!d.phone) d.phone = (d.cards.find(c => c.phone) || {}).phone || ''; d.v = 12; }
-  // Versión 12 → 13: tiendas vinculadas (Cuenta Empresarial)
-  if (d.v < 13) { d.stores = d.stores || []; d.bizPending = d.bizPending || null; d.deviceToken = d.deviceToken || ''; d.v = 13; }
-  // Versión 13 → 14: notificaciones push de ventas
-  if (d.v < 14) { d.fcmToken = d.fcmToken || ''; d.v = 14; }
+  // Versión 11 → 12: opción de ver todas las cuentas completas en Inicio (desactivada por defecto)
+  if (d.v < 12) { if (d.fullAccList === undefined) d.fullAccList = false; d.v = 12; }
   return d;
 }
 let memStore = null;
@@ -738,7 +701,7 @@ function save() {
 }
 
 // Estado de la interfaz (no se guarda)
-const UI = { screen: 'home', sel: null, accOpen: false, storeId: null, biz: {}, filter: 'all', card: 'all', q: '', month: null, cq: '', open: { me: true }, convCur: 'CUP' };
+const UI = { screen: 'home', sel: null, filter: 'all', card: 'all', q: '', month: null, cq: '', open: { me: true }, convCur: 'CUP' };
 let F = {}; // estado del formulario abierto
 
 /* ====== Utilidades ====== */
@@ -827,11 +790,7 @@ function cardBal(c) {
 }
 const totalCUP = () => S.cards.reduce((s, c) => s + toCUP(cardBal(c), c.currency), 0);
 // Solo las cuentas marcadas con su casilla cuentan para el "Saldo" del inicio
-// ¿Se muestra la cuenta en la pantalla principal? El efectivo siempre (salvo en cero); las demás, según su casilla
-const showsHome = c => !!BRANDS[c.brand].cash || c.showHome !== false;
-// Cuentas que se ven en el inicio: las que se muestran y no están en cero
-const homeCards = () => S.cards.filter(c => showsHome(c) && round2(cardBal(c)) !== 0);
-const homeTotalCUP = () => S.cards.filter(c => c.included && showsHome(c)).reduce((s, c) => s + toCUP(cardBal(c), c.currency), 0);
+const homeTotalCUP = () => S.cards.filter(c => c.included).reduce((s, c) => s + toCUP(cardBal(c), c.currency), 0);
 // Convierte el saldo de la cuenta seleccionada a la moneda elegida en el inicio
 // El saldo grande se expresa en la moneda elegida (CUP, USD o SQP)
 function homeSaldo(cur) { const cup = homeTotalCUP(); return cur === 'CUP' ? cup : cup / rate(cur); }
@@ -865,7 +824,7 @@ let toastT;
 function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2200); }
 
 /* ====== Navegación ====== */
-const APP_VERSION = '2.9.9.9';
+const APP_VERSION = '3.0.0';
 
 /* ====== Actualizaciones desde GitHub Releases ====== */
 const GH_REPO = 'LuisARF04/mis-finanzas'; // usuario/repositorio donde se compila el APK
@@ -905,8 +864,9 @@ function downloadUpdate() {
 }
 function applyAnim() { document.documentElement.classList.toggle('no-anim', !S.anim); }
 function toggleAnim() { S.anim = !S.anim; save(); applyAnim(); render(); toast(S.anim ? 'Animaciones activadas' : 'Animaciones desactivadas'); }
+function toggleFullAccList() { S.fullAccList = !S.fullAccList; save(); render(); toast(S.fullAccList ? 'Mostrando todas las cuentas' : 'Volviendo a la pila de cuentas'); }
 function render() {
-  const views = { home: vHome, history: vHistory, cards: vCards, counter: vCounter, stats: vStats, settings: vSettings, store: vStore };
+  const views = { home: vHome, history: vHistory, cards: vCards, counter: vCounter, stats: vStats, settings: vSettings };
   const main = $('#main');
   // Entrada escalonada solo la primera vez que se abre la app
   if (UI.screen === 'home' && !UI.introDone) {
@@ -925,8 +885,7 @@ function render() {
 }
 function go(s) {
   const changed = UI.screen !== s;
-  if (changed && s === 'home') UI.accOpen = false;   // al volver al inicio, la lista de cuentas empieza contraída
-  UI.screen = s; render(); window.scrollTo(0, 0);
+  UI.screen = s; render(); const mEl = $('#main'); if (mEl) mEl.scrollTop = 0;
   if (changed) { const m = $('#main'); m.classList.remove('screen-in'); void m.offsetWidth; m.classList.add('screen-in'); }
 }
 // Cuenta el saldo hasta su nuevo valor
@@ -952,7 +911,7 @@ function renderNav() {
   }
   let changed = false;
   pill.querySelectorAll('.nav-item').forEach(b => {
-    const on = b.dataset.k === (UI.screen === 'store' ? 'home' : UI.screen);
+    const on = b.dataset.k === UI.screen;
     if (b.classList.contains('active') !== on) changed = true;
     b.classList.toggle('active', on);
   });
@@ -1006,10 +965,8 @@ function vHome() {
     </div>` : ''}
   </section>
 
-  <div class="sec-head"><div class="sec-left"><h2>Mis Cuentas</h2>${accToggleBtn()}</div><button class="chip-btn" onclick="selectAllAccounts()">${I.check} Seleccionar Todas</button></div>
+  <div class="sec-head"><h2>Mis cuentas</h2><button class="chip-btn" onclick="selectAllAccounts()">${I.check} Seleccionar todas</button></div>
   ${S.cards.length ? stack() : `<div class="panel empty">Agrega tu primera cuenta para empezar.<br><br><button class="btn" onclick="openCardForm(null,'account')">Agregar cuenta</button></div>`}
-
-  ${bizSection()}
 
   <div class="sec-head"><h2>Recientes</h2>${S.tx.length ? `<button class="link" onclick="go('history')">Ver todo</button>` : ''}</div>
   ${recent.length ? `<div>${recent.map(t => txRow(t, true)).join('')}</div>` : `<div class="empty">Aún no hay movimientos. Toca + para registrar uno.</div>`}`;
@@ -1023,16 +980,12 @@ function acctSub(c) {
   return `${b.n}${b.acct ? '' : ' ••' + c.last4} · ${c.currency}`;
 }
 function stack() {
-  // Solo se muestran las cuentas con saldo y marcadas para mostrarse (casilla en Tarjetas)
-  const vis = homeCards();
-  if (!vis.length) return `<div class="empty">No hay cuentas para mostrar. Aquí aparecen las que tienen saldo y están marcadas en Tarjetas.</div>`;
-  if (!vis.some(c => c.id === UI.sel)) UI.sel = vis[0].id;
-  // Contraída: solo la cuenta elegida. Desplegada: la lista de cuentas y, abajo, la elegida.
-  const open = UI.accOpen && vis.length > 1;
-  const order = open ? vis.filter(c => c.id !== UI.sel).concat(cardById(UI.sel)) : [cardById(UI.sel)];
+  if (S.fullAccList) return fullAccountsHTML();
+  if (!cardById(UI.sel)) UI.sel = S.cards[0].id;
+  const order = S.cards.filter(c => c.id !== UI.sel).concat(cardById(UI.sel));
   return `<div class="stack">${order.map((c, i) => {
     const front = i === order.length - 1, bal = cardBal(c);
-    return `<div class="stack-card ${front ? 'front' : ''} ${front && UI.justSel === c.id ? 'pop' : ''} ${!front && UI.rowAnim ? 'rowin' : ''}" style="--i:${i};--bc:${BRANDS[c.brand].c};z-index:${i + 1}" onclick="${front ? `openCardDetail('${c.id}')` : `selectCard('${c.id}')`}">
+    return `<div class="stack-card ${front ? 'front' : ''} ${front && UI.justSel === c.id ? 'pop' : ''}" style="--i:${i};--bc:${BRANDS[c.brand].c};z-index:${i + 1}" onclick="${front ? `openCardDetail('${c.id}')` : `selectCard('${c.id}')`}">
       <div class="sc-row">${brandIcon(c.brand)}
         <div class="sc-id"><div class="sc-name"><i class="cdot" style="background:${accent(c)}"></i><span class="ell">${esc(acctTitle(c))}</span></div><div class="sc-sub">${esc(acctSub(c))}</div></div>
         <button class="acc-check ${c.included ? 'on' : ''}" onclick="event.stopPropagation();toggleInclude('${c.id}')" aria-label="Incluir en el saldo">${c.included ? I.check : ''}</button></div>
@@ -1044,32 +997,25 @@ function stack() {
     </div>`;
   }).join('')}</div>`;
 }
-function selectCard(id) { UI.sel = id; UI.justSel = id; UI.accOpen = false; render(); }   // al elegir una cuenta, la lista se contrae
-// Píldora junto al título "Mis Cuentas" (solo si hay más de una cuenta que mostrar)
-function accToggleBtn() {
-  const n = homeCards().length;
-  if (n < 2) return '';
-  const open = UI.accOpen;
-  return `<button class="sc-toggle ${open ? 'open' : ''}" onclick="toggleAccounts()" aria-expanded="${open}" aria-label="${open ? 'Contraer la lista de cuentas' : 'Ver la lista de cuentas'}"><span>${n}</span>${I.chevR}</button>`;
+// Cuando "Mostrar todas las cuentas" está activo: cada cuenta se ve completa y por separado,
+// sin la pila que reordena al tocar una.
+function fullAccountsHTML() {
+  return `<div class="stack full">${S.cards.map((c, i) => {
+    const bal = cardBal(c);
+    return `<div class="stack-card front" style="--i:${i};--bc:${BRANDS[c.brand].c};z-index:${i + 1}" onclick="openCardDetail('${c.id}')">
+      <div class="sc-row">${brandIcon(c.brand)}
+        <div class="sc-id"><div class="sc-name"><i class="cdot" style="background:${accent(c)}"></i><span class="ell">${esc(acctTitle(c))}</span></div><div class="sc-sub">${esc(acctSub(c))}</div></div>
+        <button class="acc-check ${c.included ? 'on' : ''}" onclick="event.stopPropagation();toggleInclude('${c.id}')" aria-label="Incluir en el saldo">${c.included ? I.check : ''}</button></div>
+      <div class="sc-front">
+        <div class="muted">${esc(c.holder || 'Saldo')}</div>
+        <div class="sc-bal">${num(bal)}<small>${c.currency}</small></div>
+        ${c.currency !== 'CUP' ? `<div class="muted small">≈ ${money(toCUP(bal, c.currency), 'CUP')}</div>` : ''}
+      </div></div>`;
+  }).join('')}</div>`;
 }
-// Botón de Mis Cuentas: despliega o contrae la lista de cuentas elegidas para mostrarse
-function toggleAccounts() { UI.accOpen = !UI.accOpen; UI.rowAnim = UI.accOpen; render(); UI.rowAnim = false; }
+function selectCard(id) { UI.sel = id; UI.justSel = id; render(); }
 function toggleInclude(id) { const c = cardById(id); if (!c) return; c.included = !c.included; save(); render(); }
-function setMyPhone(el) {
-  const raw = el.value.trim();
-  if (!raw) { S.phone = ''; save(); return toast('Móvil quitado'); }
-  const p = normPhone(raw);
-  if (!p) { el.value = S.phone; return toast('El móvil debe tener 8 dígitos (sin +53)'); }
-  S.phone = p; el.value = p; save(); toast('Móvil guardado');
-}
-// Alterna sobre las cuentas que se ven en el inicio: si ya están todas marcadas, las desmarca
-function selectAllAccounts() {
-  const list = homeCards();
-  if (!list.length) return toast('No hay cuentas para seleccionar');
-  const all = list.every(c => c.included);
-  list.forEach(c => c.included = !all);
-  save(); render(); toast(all ? 'Todas las cuentas desmarcadas' : 'Todas las cuentas seleccionadas');
-}
+function selectAllAccounts() { S.cards.forEach(c => c.included = true); save(); render(); toast('Todas las cuentas seleccionadas'); }
 function avatarInner() { return S.photo ? `<img src="${S.photo}" alt="">` : esc(initials()); }
 // Foto de perfil: recorte cuadrado al centro, 256 px
 function setPhoto(inp) {
@@ -1158,16 +1104,9 @@ const ctInitials = n => { const p = n.trim().split(/\s+/); return ((p[0] || '?')
 const K_BRANDS = ['BPA', 'BANDEC', 'VISA', 'PAYPAL', 'QVAPAY', 'CLASICA', 'TROPICAL'];
 // Tarjetas cubanas: su QR usa el formato de Transfermóvil (Transferencia → escanear)
 const TM_BRANDS = { BPA: 1, BANDEC: 1, CLASICA: 1, TROPICAL: 1 };
-const qrText = (k, phone) => TM_BRANDS[k.brand] ? `TRANSFERMOVIL_ETECSA,TRANSFERENCIA,${k.number},${phone || ''},` : k.number;
-// Deja solo los 8 dígitos del móvil (quita +53, espacios, guiones...). Vacío si no es válido.
-function normPhone(raw) {
-  let d = String(raw || '').replace(/\D/g, '');
-  if (d.startsWith('0053')) d = d.slice(4);
-  else if (d.startsWith('53') && d.length === 10) d = d.slice(2);
-  return d.length === 8 ? d : '';
-}
+const qrText = k => TM_BRANDS[k.brand] ? `TRANSFERMOVIL_ETECSA,TRANSFERENCIA,${k.number},${k.phone || ''},` : k.number;
 function fmtPhone(el) { let d = el.value.replace(/\D/g, ''); if (d.length > 8 && d.startsWith('53')) d = d.slice(2); el.value = d.slice(0, 8); }
-const phoneField = (id, v) => `<div class="field" id="${id}field"><label>Móvil asociado (opcional)</label><input id="${id}" class="inp" inputmode="numeric" maxlength="20" placeholder="5XXXXXXX" autocomplete="off" value="${esc(v || '')}" oninput="fmtPhone(this)"><div class="hint">El móvil de Transfermóvil, 8 dígitos sin +53. Va dentro del QR.</div></div>`;
+const phoneField = (id, v) => `<div class="field" id="${id}field"><label>Móvil asociado (opcional)</label><input id="${id}" class="inp" inputmode="numeric" maxlength="12" placeholder="5XXXXXXX" autocomplete="off" value="${esc(v || '')}" oninput="fmtPhone(this)"><div class="hint">El móvil de Transfermóvil, 8 dígitos sin +53. Va dentro del QR.</div></div>`;
 
 function vCards() {
   return `
@@ -1263,9 +1202,8 @@ function editTile(el) {
 /* --- Menú + de Tarjetas --- */
 function openCtMenu() {
   openSheet('Agregar',
-    menuItem(I.userPlus, 'Importar de mis contactos', 'Nombre, móvil y foto del teléfono', 'importContactNew()') +
-    menuItem(I.userPlus, 'Nuevo contacto', 'Escribirlo a mano', 'openContactForm()') +
-    menuItem(I.card, 'Tarjeta mía', 'BPA, BANDEC, VISA, Efectivo y más', 'openCardForm()'));
+    menuItem(I.userPlus, 'Nuevo contacto', 'Una persona y sus tarjetas', 'openContactForm()') +
+    menuItem(I.card, 'Insertar tarjeta personal', 'BPA, BANDEC, VISA, Efectivo y más', 'openCardForm()'));
 }
 /* --- Contacto --- */
 function photoFromFile(f) {
@@ -1296,46 +1234,15 @@ function updCtAv() {
   $('#ct-avi').innerHTML = F.ctPhoto ? `<img src="${F.ctPhoto}" alt="">` : esc(nm ? ctInitials(nm) : '+');
   $('#ct-rm').style.display = F.ctPhoto ? '' : 'none';
 }
-// Importar un contacto del teléfono con el selector nativo de Wallet (el WebView de Android no trae el de Chrome)
-async function pickPhoneContact() {
-  const cap = window.Capacitor;
-  const P = cap && ((cap.Plugins && cap.Plugins.ContactPicker) || (cap.registerPlugin && cap.registerPlugin('ContactPicker')));
-  if (!P || !P.pick) { toast('Importar contactos no está disponible en esta instalación'); return null; }
-  try {
-    const r = await P.pick();
-    const p = normPhone(r.phone), phone = p && p[0] === '5' ? p : '';
-    if (r.phone && !phone) toast('Ese número no parece un móvil cubano de 8 dígitos');
-    return { name: String(r.name || '').trim().slice(0, 40), phone, photo: r.photo ? 'data:image/jpeg;base64,' + r.photo : '' };
-  } catch (e) {
-    const m = String((e && (e.message || e.code)) || e);
-    if (m === 'cancelled') return null;
-    if (m === 'permission_denied') toast('Sin permiso para ver tus contactos. Puedes escribir los datos a mano.');
-    else if (/UNIMPLEMENTED|not implemented/i.test(m)) toast('Importar contactos no está disponible en esta instalación');
-    else toast('No se pudo importar el contacto');
-    return null;
-  }
-}
-async function importContactNew() { const r = await pickPhoneContact(); if (r) openContactForm(null, r); }
-async function importIntoForm() {
-  const r = await pickPhoneContact(); if (!r) return;
-  if (r.name) $('#ct-name').value = r.name;
-  if (r.phone) $('#ct-phone').value = r.phone;
-  if (r.photo) F.ctPhoto = r.photo;
-  updCtAv();
-}
-function openContactForm(id, pre) {
-  const c = id ? ctById(id) : null; pre = pre || {};
-  F = { ctEdit: id || null, ctPhoto: pre.photo !== undefined ? pre.photo : (c ? (c.photo || '') : '') };
-  const nameV = pre.name !== undefined ? pre.name : (c ? c.name : ''), phoneV = pre.phone !== undefined ? pre.phone : (c ? (c.phone || '') : '');
+function openContactForm(id) {
+  const c = id ? ctById(id) : null; F = { ctEdit: id || null, ctPhoto: c ? (c.photo || '') : '' };
   openSheet(c ? 'Editar contacto' : 'Nuevo contacto', `
     <div class="ct-photo">
       <label class="cavatar big" id="ct-av"><span id="ct-avi"></span><input type="file" accept="image/*" hidden onchange="pickCtPhoto(this)"></label>
       <div class="grow"><div style="font-weight:600">Foto de perfil</div><div class="muted small">Toca el círculo para elegir una foto</div></div>
       <button class="chip-btn" id="ct-rm" onclick="removeCtPhoto()">Quitar</button>
     </div>
-    ${c ? '' : `<button class="btn ghost" style="margin-bottom:14px" onclick="importIntoForm()">Importar de mis contactos</button>`}
-    <div class="field"><label>Nombre</label><input id="ct-name" class="inp" maxlength="40" autocomplete="off" placeholder="Ej: Mamá, Carlos, Yaneisy" oninput="updCtAv()" value="${esc(nameV)}"></div>
-    <div class="field"><label>Móvil (opcional)</label><input id="ct-phone" class="inp" inputmode="numeric" maxlength="20" placeholder="5XXXXXXX" autocomplete="off" oninput="fmtPhone(this)" value="${esc(phoneV)}"><div class="hint">Se usa por defecto en las tarjetas de este contacto.</div></div>
+    <div class="field"><label>Nombre</label><input id="ct-name" class="inp" maxlength="40" autocomplete="off" placeholder="Ej: Mamá, Carlos, Yaneisy" oninput="updCtAv()" value="${esc(c ? c.name : '')}"></div>
     <button class="btn" onclick="saveContact()">${c ? 'Guardar cambios' : 'Guardar y agregar tarjeta'}</button>
     ${c ? `<button class="btn danger" style="margin-top:10px" onclick="confirmDelContact('${id}')">Eliminar contacto</button>` : ''}`);
   updCtAv();
@@ -1343,10 +1250,8 @@ function openContactForm(id, pre) {
 function saveContact() {
   const name = $('#ct-name').value.trim();
   if (!name) return toast('Escribe el nombre');
-  const rawPhone = $('#ct-phone').value.trim(), phone = normPhone(rawPhone);
-  if (rawPhone && !phone) return toast('El móvil debe tener 8 dígitos (sin +53)');
-  if (F.ctEdit) { const c = ctById(F.ctEdit); c.name = name; c.phone = phone; c.photo = F.ctPhoto || ''; save(); closeSheet(); render(); return toast('Contacto guardado'); }
-  const c = { id: uid(), name, phone, photo: F.ctPhoto || '', cards: [] };
+  if (F.ctEdit) { const c = ctById(F.ctEdit); c.name = name; c.photo = F.ctPhoto || ''; save(); closeSheet(); render(); return toast('Contacto guardado'); }
+  const c = { id: uid(), name, photo: F.ctPhoto || '', cards: [] };
   S.contacts.push(c); UI.open[c.id] = true; save(); render(); openKCardForm(c.id);
 }
 function confirmDelContact(id) {
@@ -1364,7 +1269,7 @@ function openKCardForm(cid, id) {
     <div class="field"><label>Tipo</label><div class="brand-grid" id="k-brands"></div></div>
     <div class="field"><label>Nombre de la tarjeta (opcional)</label><input id="k-alias" class="inp" maxlength="24" placeholder="Ej: Principal, Ahorro" value="${esc(k ? k.alias : '')}"></div>
     <div class="field"><label id="k-numlbl"></label><input id="k-num" class="inp" autocomplete="off" oninput="fmtKNum()" value="${k ? esc(BRANDS[k.brand].acct ? k.number : fmtDigits(k.number)) : ''}"></div>
-    ${normPhone(ct.phone) ? '' : phoneField('k-phone', k && k.phone)}
+    ${phoneField('k-phone', k && k.phone)}
     <button class="btn" onclick="saveKCard()">${k ? 'Guardar cambios' : 'Agregar tarjeta'}</button>
     ${k ? `<button class="btn danger" style="margin-top:10px" onclick="confirmDelKCard('${cid}','${id}')">Eliminar tarjeta</button>` : ''}`);
   renderKBrands();
@@ -1373,7 +1278,7 @@ function renderKBrands() {
   $('#k-brands').innerHTML = K_BRANDS.map(b => `<button class="brand-opt ${F.brand === b ? 'on' : ''}" onclick="pickKBrand('${b}')" aria-label="${BRANDS[b].n}">${badge(b)}</button>`).join('');
   const b = BRANDS[F.brand], inp = $('#k-num');
   $('#k-numlbl').textContent = b.lbl;
-  const pf = $('#k-phonefield'); if (pf) pf.style.display = TM_BRANDS[F.brand] ? '' : 'none';
+  $('#k-phonefield').style.display = TM_BRANDS[F.brand] ? '' : 'none';
   inp.placeholder = b.acct ? b.ph : '0000 0000 0000 0000';
   inp.inputMode = b.acct ? 'email' : 'numeric'; inp.maxLength = b.acct ? 60 : 23;
   fmtKNum();
@@ -1385,13 +1290,9 @@ function saveKCard() {
   let number;
   if (b.acct) { if (raw.length < 3) return toast('Escribe el ' + b.lbl.toLowerCase()); number = raw; }
   else { number = raw.replace(/\D/g, ''); if (number.length < 13 || number.length > 19) return toast('El número debe tener entre 13 y 19 dígitos'); }
-  // Si el contacto ya tiene móvil, la tarjeta usa ese y no se pide aquí
-  const pf = $('#k-phone'), data = { brand: F.brand, alias: $('#k-alias').value.trim(), number, last4: number.slice(-4) };
-  if (pf) {
-    const phone = TM_BRANDS[F.brand] ? pf.value.replace(/\D/g, '') : '';
-    if (phone && phone.length !== 8) return toast('El móvil debe tener 8 dígitos (sin +53)');
-    data.phone = phone;
-  }
+  const phone = TM_BRANDS[F.brand] ? $('#k-phone').value.replace(/\D/g, '') : '';
+  if (phone && phone.length !== 8) return toast('El móvil debe tener 8 dígitos (sin +53)');
+  const data = { brand: F.brand, alias: $('#k-alias').value.trim(), number, last4: number.slice(-4), phone };
   if (F.kid) Object.assign(ct.cards.find(x => x.id === F.kid), data); else ct.cards.push(Object.assign({ id: uid() }, data));
   UI.open[ct.id] = true; save(); closeSheet(); render(); toast(F.kid ? 'Cambios guardados' : 'Tarjeta agregada');
 }
@@ -1405,8 +1306,7 @@ function openQR(gid, id) {
   const me = gid === 'me', ct = me ? null : ctById(gid);
   const k = me ? cardById(id) : ct && ct.cards.find(c => c.id === id);
   if (!k || !k.number) return;
-  const phone = me ? (S.phone || k.phone || '') : ((ct && ct.phone) || k.phone || '');
-  const svg = QR.svg(qrText(k, phone));
+  const svg = QR.svg(qrText(k));
   if (!svg) return toast('Ese texto es demasiado largo para un QR');
   const b = BRANDS[k.brand]; F.qrText = k.number;
   openSheet('Código QR', `
@@ -1414,7 +1314,7 @@ function openQR(gid, id) {
     <div class="qr-cap"><div class="qr-owner">${esc(me ? (S.name || 'Yo') : ct.name)}</div>
       <div class="muted small">${esc(b.n)}${k.alias ? ' · ' + esc(k.alias) : ''}</div></div>
     <div class="qr-num ${b.acct ? 'acct' : ''}">${b.acct ? esc(k.number) : fmtDigits(k.number)}</div>
-    ${TM_BRANDS[k.brand] ? `<div class="muted small" style="text-align:center;margin:-8px 0 16px;line-height:1.5">Escanéalo en Transfermóvil:<br>Transferencia → escanear QR${phone ? '<br>Móvil ' + esc(phone) : (me ? '<br>Agrega tu móvil en Ajustes → Perfil para incluirlo' : '')}</div>` : ''}
+    ${TM_BRANDS[k.brand] ? `<div class="muted small" style="text-align:center;margin:-8px 0 16px;line-height:1.5">Escanéalo en Transfermóvil:<br>Transferencia → escanear QR${k.phone ? '<br>Móvil ' + esc(k.phone) : ''}</div>` : ''}
     <button class="btn ghost" onclick="copyText(F.qrText).then(ok => toast(ok ? 'Copiado' : 'No se pudo copiar'))">Copiar número</button>`);
 }
 function bigCard(c, clickable) {
@@ -1500,40 +1400,41 @@ function cardBars() {
 /* ====== Pantalla: Ajustes ====== */
 
 /* ====== Contador de billetes ====== */
-const COUNTER_DENOMS = { CUP: [5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000], USD: [1, 5, 10, 20, 50, 100] };
+const COUNTER_DENOMS = { CUP: [1, 3, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000], USD: [1, 5, 10, 20, 50, 100] };
 function counterCounts(cur) { return S.counter.counts[cur] || (S.counter.counts[cur] = {}); }
 function counterTotal(cur) { const c = counterCounts(cur); return COUNTER_DENOMS[cur].reduce((s, d) => s + d * (c[d] || 0), 0); }
 function vCounter() {
   return `
-  <header class="top"><button class="icon-btn" onclick="go('home')" aria-label="Volver">${I.back}</button><h1>Contador</h1><span class="spacer"></span></header>
+  <header class="top" style="margin-bottom:10px"><button class="icon-btn" onclick="go('home')" aria-label="Volver">${I.back}</button><h1>Contador</h1><span class="spacer"></span></header>
   <div id="counterBody">${counterBodyHTML()}</div>`;
 }
+const COUNTER_CUR = 'CUP';
 function counterBodyHTML() {
-  const cur = S.counter.cur, counts = counterCounts(cur), total = counterTotal(cur);
+  const cur = COUNTER_CUR, counts = counterCounts(cur), total = counterTotal(cur);
   return `
-  <div class="seg2cur">${['CUP', 'USD'].map(c => `<button class="${cur === c ? 'on' : ''}" onclick="setCounterCur('${c}')">${c}</button>`).join('')}</div>
-  <div class="panel cnt-total ${total > 0 ? 'has' : ''}" id="cnt-panel">
-    <div class="row-between"><span class="muted">Total contado</span>
-      <button class="icon-btn sm" onclick="clearCounter()" aria-label="Vaciar">${I.trash}</button></div>
-    <div class="big-amount"><span id="cnt-amt">${nf.format(total)}</span><small>${cur}</small></div>
+  <div class="panel cnt-total ${total > 0 ? 'has' : ''}" id="cnt-panel" style="padding:12px 16px">
+    <div class="row-between">
+      <span class="muted">Total contado</span>
+      <div class="cnt-total-amt"><span id="cnt-amt">${nf.format(total)}</span><small>${cur}</small></div>
+      <button class="icon-btn sm" onclick="clearCounter()" aria-label="Vaciar">${I.trash}</button>
+    </div>
   </div>
   <div class="cnt-grid">${COUNTER_DENOMS[cur].map(d => {
     const n = counts[d] || 0;
-    return `<div class="cnt-card ${n > 0 ? 'on' : ''}" id="row-${d}"><div class="cnt-lbl">${d} ${cur}</div>
+    return `<div class="cnt-card ${n > 0 ? 'on' : ''}" id="row-${d}"><div class="cnt-lbl">${d}</div>
       <input class="inp cnt-qty" id="q-${d}" inputmode="numeric" maxlength="6" placeholder="0" value="${n || ''}" oninput="onDenomInput(this,${d})">
-      <div class="cnt-sub" id="sub-${d}">${n > 0 ? `${nf.format(n * d)} ${cur}` : ''}</div></div>`;
-  }).join('')}</div>
-  <p class="muted small" style="text-align:center;margin-top:16px;line-height:1.5">Escribe cuántos billetes tienes de cada denominación.</p>`;
+      <div class="cnt-sub" id="sub-${d}">${n > 0 ? nf.format(n * d) : ''}</div></div>`;
+  }).join('')}</div>`;
 }
 // Escribir la cantidad actualiza el total al instante, sin perder el foco del campo
 function onDenomInput(el, d) {
   const v = el.value.replace(/\D/g, '').slice(0, 6);
   if (v !== el.value) el.value = v;
-  const cur = S.counter.cur, counts = counterCounts(cur), n = v === '' ? 0 : parseInt(v, 10);
+  const cur = COUNTER_CUR, counts = counterCounts(cur), n = v === '' ? 0 : parseInt(v, 10);
   if (n > 0) counts[d] = n; else delete counts[d];
   save();
   const row = $(`#row-${d}`); if (row) row.classList.toggle('on', n > 0);
-  const sub = $(`#sub-${d}`); if (sub) sub.textContent = n > 0 ? `${nf.format(n * d)} ${cur}` : '';
+  const sub = $(`#sub-${d}`); if (sub) sub.textContent = n > 0 ? nf.format(n * d) : '';
   const total = counterTotal(cur);
   const amt = $('#cnt-amt'); if (amt) amt.textContent = nf.format(total);
   const panel = $('#cnt-panel'); if (panel) panel.classList.toggle('has', total > 0);
@@ -1541,12 +1442,11 @@ function onDenomInput(el, d) {
 function renderCounterBody(prevTotal) {
   const el = $('#counterBody'); if (!el) return;
   el.innerHTML = counterBodyHTML();
-  const to = counterTotal(S.counter.cur);
+  const to = counterTotal(COUNTER_CUR);
   if (prevTotal !== undefined && prevTotal !== to) countUp($('#cnt-amt'), prevTotal, to);
 }
-function setCounterCur(cur) { S.counter.cur = cur; save(); renderCounterBody(); }
 function clearCounter() {
-  const cur = S.counter.cur, before = counterTotal(cur);
+  const cur = COUNTER_CUR, before = counterTotal(cur);
   if (!before) return;
   S.counter.counts[cur] = {}; save(); renderCounterBody(before); toast('Contador vaciado');
 }
@@ -1571,10 +1471,7 @@ function vSettings() {
       <label class="chip-btn">${S.photo ? 'Cambiar' : 'Subir'}<input type="file" accept="image/*" hidden onchange="setPhoto(this)"></label></div>
     <div class="set-row"><span class="grow">Nombre</span>
     <input class="inp" style="width:60%" value="${esc(S.name)}" placeholder="Tu nombre" maxlength="40" onchange="S.name=this.value.trim();save();toast('Nombre guardado')"></div>
-    <div class="set-row"><span class="grow">Mi móvil</span>
-    <input id="my-phone" class="inp" style="width:60%" inputmode="numeric" maxlength="20" placeholder="5XXXXXXX" value="${esc(S.phone)}" oninput="fmtPhone(this)" onchange="setMyPhone(this)"></div>
   </div>
-  <p class="muted small" style="margin:-4px 4px 0;line-height:1.5">Tu móvil va dentro del QR de tus tarjetas de Transfermóvil.</p>
 
   <div class="set-title">Tasa de cambio</div>
   <div class="set-group">
@@ -1589,7 +1486,9 @@ function vSettings() {
 
   <div class="set-title">Apariencia</div>
   <div class="set-group"><div class="set-row"><span class="grow">Animaciones</span>
-    <button class="switch ${S.anim ? 'on' : ''}" onclick="toggleAnim()" aria-label="Animaciones"></button></div></div>
+    <button class="switch ${S.anim ? 'on' : ''}" onclick="toggleAnim()" aria-label="Animaciones"></button></div>
+    <div class="set-row"><div class="grow"><div>Mostrar todas las cuentas</div><div class="muted small">En Inicio, ve todas tus cuentas completas en vez de la pila que cambia al tocar una</div></div>
+    <button class="switch ${S.fullAccList ? 'on' : ''}" onclick="toggleFullAccList()" aria-label="Mostrar todas las cuentas"></button></div></div>
 
   <div class="set-title">Privacidad</div>
   <div class="set-group"><div class="set-row"><span class="grow">Ocultar saldos</span>
@@ -1620,8 +1519,7 @@ function openFab() {
   openSheet('Agregar',
     menuItem(I.down, 'Nuevo ingreso', 'Dinero que entra', "openTx('income')") +
     menuItem(I.up, 'Nuevo gasto', 'Dinero que sale', "openTx('expense')") +
-    menuItem(I.card, 'Agregar Cuenta Personal', 'BPA, BANDEC, VISA, Efectivo y más', "openCardForm(null,'account')") +
-    menuItem(I.store, 'Agregar Cuenta Empresarial', 'Con el ID de tu tienda', "openBizLink()"));
+    menuItem(I.card, 'Agregar Cuenta Personal', 'BPA, BANDEC, VISA, Efectivo y más', "openCardForm(null,'account')"));
 }
 function openPlus() {
   openSheet('¿Qué quieres hacer?',
@@ -1673,10 +1571,10 @@ function saveTx() {
 }
 
 /* --- Transferencia --- */
-function openTransfer() {
+function openTransfer(fromId) {
   if (S.cards.length < 2) { toast('Necesitas al menos 2 tarjetas para transferir'); return; }
   F = { manual: false };
-  const a = cardById(UI.sel) ? UI.sel : S.cards[0].id;
+  const a = (fromId && cardById(fromId)) ? fromId : (cardById(UI.sel) ? UI.sel : S.cards[0].id);
   const b = S.cards.find(c => c.id !== a).id;
   openSheet('Transferencia', `
     <div class="field"><label>Desde</label><select id="t-from" class="inp" onchange="F.manual=false;trCalc()">${cardOptions(a)}</select></div>
@@ -1713,7 +1611,7 @@ function saveTransfer() {
 /* --- Tarjeta nueva / editar --- */
 function openCardForm(id, kind) {
   const c = id ? cardById(id) : null;
-  F = { brand: c ? c.brand : 'BPA', cur: c ? c.currency : 'CUP', orig: c ? c.currency : null, edit: id || null, color: c ? accent(c) : nextColor(), kind, showHome: c ? c.showHome !== false : true };
+  F = { brand: c ? c.brand : 'BPA', cur: c ? c.currency : 'CUP', orig: c ? c.currency : null, edit: id || null, color: c ? accent(c) : nextColor(), kind };
   openSheet(c ? 'Editar tarjeta' : (kind === 'account' ? 'Nueva Cuenta' : 'Nueva tarjeta'), `
     <div class="field"><label>Tipo</label><div class="brand-grid" id="c-brands"></div></div>
     <div class="field"><label>Nombre de la cuenta</label><input id="c-alias" class="inp" maxlength="24" placeholder="Ej: Salario, Ahorro, Caja, Negocio" value="${esc(c ? c.alias : '')}"></div>
@@ -1721,19 +1619,13 @@ function openCardForm(id, kind) {
     <div class="field" id="c-numfield"><label id="c-numlbl">Número de la tarjeta</label>
       <input id="c-num" class="inp" autocomplete="off" oninput="fmtNumInput()" value="${c && c.number ? esc(BRANDS[c.brand].acct ? c.number : fmtDigits(c.number)) : ''}">
       <div class="hint">${c && !c.number ? 'Escribe el número completo para poder copiarlo desde el inicio. ' : ''}Se guarda solo en este teléfono. Nunca pongas el CVV ni el PIN.</div></div>
+    ${phoneField('c-phone', c && c.phone)}
     <div class="field"><label>Moneda</label><div class="seg seg4" id="c-curs"></div></div>
     <div class="field"><label>Saldo inicial</label><div class="inp-wrap"><input id="c-init" class="inp" inputmode="decimal" placeholder="0.00" value="${c ? c.initial : ''}"><span class="inp-suf" id="c-cursuf"></span></div>
       <div class="hint">${c ? 'Saldo antes de los movimientos registrados.' : 'Lo que tiene la tarjeta ahora mismo.'}</div></div>
-    <div class="field" id="c-homefield"><button type="button" class="chk-row ${F.showHome ? 'on' : ''}" id="c-home" onclick="toggleFormHome()"><span class="acc-check ${F.showHome ? 'on' : ''}">${F.showHome ? I.check : ''}</span>Mostrar en la pantalla principal</button>
-      <div class="hint">Si la desmarcas, no sale en el inicio ni suma al Saldo.</div></div>
     <button class="btn" onclick="saveCard()">${c ? 'Guardar cambios' : (kind === 'account' ? 'Agregar Cuenta' : 'Agregar tarjeta')}</button>
     ${c ? `<button class="btn danger" style="margin-top:10px" onclick="confirmDelCard('${id}')">Eliminar tarjeta</button>` : ''}`);
   renderBrands(); renderCurs(); renderSw();
-}
-function toggleFormHome() {
-  F.showHome = !F.showHome;
-  const r = $('#c-home'), ck = r.querySelector('.acc-check');
-  r.classList.toggle('on', F.showHome); ck.classList.toggle('on', F.showHome); ck.innerHTML = F.showHome ? I.check : '';
 }
 function renderSw() {
   $('#c-sw').innerHTML = PALETTE.map(col => `<button class="sw ${F.color === col ? 'on' : ''}" style="background:${col}" onclick="F.color='${col}';renderSw()" aria-label="Color"></button>`).join('');
@@ -1753,7 +1645,7 @@ function renderBrands() {
     `<button class="brand-opt ${F.brand === k ? 'on' : ''}" onclick="pickBrand('${k}')" aria-label="${BRANDS[k].n}">${badge(k)}</button>`).join('');
   const b = BRANDS[F.brand], inp = $('#c-num');
   $('#c-numfield').style.display = b.cash ? 'none' : '';
-  $('#c-homefield').style.display = b.cash ? 'none' : '';
+  $('#c-phonefield').style.display = TM_BRANDS[F.brand] ? '' : 'none';
   if (b.cash) return;
   $('#c-numlbl').textContent = b.lbl;
   inp.placeholder = b.acct ? b.ph : '0000 0000 0000 0000';
@@ -1784,9 +1676,11 @@ function saveCard() {
     if (number.length < 13 || number.length > 19) return toast('El número debe tener entre 13 y 19 dígitos');
   }
   const last4 = number.slice(-4);
+  const phone = TM_BRANDS[F.brand] ? $('#c-phone').value.replace(/\D/g, '') : '';
+  if (phone && phone.length !== 8) return toast('El móvil debe tener 8 dígitos (sin +53)');
   const iv = $('#c-init').value.trim(), init = iv === '' ? 0 : parseNum(iv);
   if (isNaN(init)) return toast('El saldo inicial no es un número válido');
-  const data = { brand: F.brand, alias: $('#c-alias').value.trim(), number, last4, color: F.color, showHome: b.cash ? true : F.showHome, included: F.edit ? cardById(F.edit).included : true, currency: F.cur, initial: round2(init) };
+  const data = { brand: F.brand, alias: $('#c-alias').value.trim(), number, last4, phone, color: F.color, included: F.edit ? cardById(F.edit).included : true, currency: F.cur, initial: round2(init) };
   if (F.edit) {
     const c = cardById(F.edit);
     if (c.currency !== F.cur && S.tx.some(t => t.cardId === c.id || t.toId === c.id))
@@ -1807,6 +1701,7 @@ function openCardDetail(id) {
   openSheet(esc(c.alias || BRANDS[c.brand].n), `
     ${bigCard(c, false)}
     <div class="btn-row"><button class="btn ghost" onclick="openTx('income','${id}')">+ Ingreso</button><button class="btn ghost" onclick="openTx('expense','${id}')">− Gasto</button></div>
+    ${S.cards.length > 1 ? `<button class="btn ghost" style="margin-bottom:10px" onclick="openTransfer('${id}')">Transferir a otra cuenta</button>` : ''}
     <div class="btn-row"><button class="btn ghost" onclick="openCardForm('${id}')">Editar</button><button class="btn danger" onclick="confirmDelCard('${id}')">Eliminar</button></div>
     <div class="sec-head" style="margin-top:20px"><h2 style="font-size:18px">Movimientos</h2></div>
     ${txs.length ? txs.map(t => txRow(t, true, id)).join('') : '<div class="empty">Esta tarjeta no tiene movimientos.</div>'}`);
@@ -1928,325 +1823,10 @@ try {
   pin();
 })();
 
-/* ====== Tienda (Cuenta Empresarial) ====== */
-// Cuando tengas el proyecto de Supabase, pega aquí su URL y su clave pública ("anon" o "publishable").
-// Mientras estén vacías, la app funciona en MODO DEMOSTRACIÓN con tiendas y ventas de ejemplo.
-const BIZ_URL = 'https://xbkscrcuktmeydotcxxj.supabase.co';
-const BIZ_KEY = 'sb_publishable_MifDVxX54L7M0rRgRUvwMg_Ko9_7IOS';
-
-const Biz = (() => {
-  const cfg = { url: BIZ_URL.trim().replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/, ''), key: BIZ_KEY.trim() };
-  const live = () => !!(cfg.url && cfg.key);
-
-  // --- Servidor real (Supabase): solo se usan las funciones wallet_* (las tablas no son accesibles desde Wallet) ---
-  async function rpc(fn, args) {
-    let r;
-    try {
-      const h = { 'Content-Type': 'application/json', apikey: cfg.key };
-      if (/^eyJ/.test(cfg.key)) h.Authorization = 'Bearer ' + cfg.key;
-      r = await fetch(`${cfg.url}/rest/v1/rpc/${fn}`, { method: 'POST', headers: h, body: JSON.stringify(args) });
-    } catch (e) { throw new Error('network'); }
-    let data = null; try { data = await r.json(); } catch (e) {}
-    if (!r.ok) {
-      if (r.status === 404 || (data && data.code === 'PGRST202')) throw new Error('not_ready');
-      throw new Error((data && data.message) || 'server');
-    }
-    return data;
-  }
-  const realApi = {
-    requestLink: (id, token, code, label) => rpc('wallet_request_link', { p_store_id: id, p_token: token, p_code: code, p_label: label }),
-    linkStatus: (id, token) => rpc('wallet_link_status', { p_store_id: id, p_token: token }),
-    summary: (id, token) => rpc('wallet_sales_summary', { p_store_id: id, p_token: token }),
-    sales: (id, token, before, limit) => rpc('wallet_get_sales', { p_store_id: id, p_token: token, p_before: before, p_limit: limit }),
-    unlink: (id, token) => rpc('wallet_unlink', { p_store_id: id, p_token: token }),
-    registerPush: (id, token, fcm) => rpc('wallet_register_push', { p_store_id: id, p_token: token, p_fcm_token: fcm }),
-    registerDevice: (token, fcm) => rpc('wallet_register_device', { p_token: token, p_fcm_token: fcm })
-  };
-
-  // --- Modo demostración (sin servidor) ---
-  const DEMO = { '12345678': 'Bodega La Esquina (demo)', '87654321': 'Cafetería Central (demo)' };
-  const demo = { delay: 6000 };   // la "app de tienda" simulada confirma a los 6 segundos
-  const links = () => { try { return JSON.parse(localStorage.getItem('wallet_demo_links') || '{}'); } catch (e) { return {}; } };
-  const saveLinks = o => { try { localStorage.setItem('wallet_demo_links', JSON.stringify(o)); } catch (e) {} };
-  function demoSales(storeId) {
-    // Generador con semilla: salen siempre las mismas ventas para el mismo ID
-    let seed = (+storeId % 2147483646) + 1;
-    const rnd = () => (seed = seed * 48271 % 2147483647) / 2147483647;
-    const CAT = [['Pan', 25], ['Refresco', 120], ['Café', 60], ['Galletas', 90], ['Aceite 1 L', 650], ['Arroz 1 lb', 180], ['Huevos (cartón)', 2300], ['Jabón', 150], ['Pollo 1 lb', 900], ['Leche en polvo', 1400]];
-    const PAY = ['Efectivo', 'Efectivo', 'Transfermóvil', 'EnZona'];
-    const out = [];
-    for (let d = 0; d < 40; d++) {
-      const day = new Date(); day.setHours(0, 0, 0, 0); day.setDate(day.getDate() - d);
-      const n = 4 + Math.floor(rnd() * 7);
-      for (let k = 0; k < n; k++) {
-        const t = new Date(day); t.setHours(8 + Math.floor(rnd() * 12), Math.floor(rnd() * 60), Math.floor(rnd() * 60));
-        const lines = 1 + Math.floor(rnd() * 3), items = [];
-        for (let i = 0; i < lines; i++) {
-          const [name, price] = CAT[Math.floor(rnd() * CAT.length)], qty = 1 + Math.floor(rnd() * 3);
-          if (!items.some(x => x.name === name)) items.push({ name, qty, price });
-        }
-        out.push({ id: storeId + '-' + t.getTime() + '-' + k, created_at: t.toISOString(), total: items.reduce((s, x) => s + x.qty * x.price, 0), payment_method: PAY[Math.floor(rnd() * PAY.length)], items, note: null });
-      }
-    }
-    const now = Date.now();
-    return out.filter(s => new Date(s.created_at).getTime() <= now).sort((a, b) => b.created_at.localeCompare(a.created_at));
-  }
-  const demoAuth = id => { const l = links()[id]; if (!l || l.status !== 'approved') throw new Error('not_authorized'); };
-  const demoApi = {
-    async requestLink(id) {
-      if (!DEMO[id]) throw new Error('store_not_found');
-      const L = links(); L[id] = { status: 'pending', t: Date.now() }; saveLinks(L);
-      return { status: 'pending' };
-    },
-    async linkStatus(id) {
-      const L = links(), l = L[id];
-      if (!l) return { status: 'none' };
-      if (l.status === 'pending' && Date.now() - l.t >= demo.delay) { l.status = 'approved'; saveLinks(L); }
-      return l.status === 'approved' ? { status: 'approved', store_name: DEMO[id], currency: 'CUP' } : { status: l.status };
-    },
-    async summary(id) {
-      demoAuth(id);
-      const all = demoSales(id), t0 = new Date(); t0.setHours(0, 0, 0, 0);
-      const m0 = new Date(t0.getFullYear(), t0.getMonth(), 1), sum = a => a.reduce((s, x) => s + x.total, 0);
-      const today = all.filter(s => new Date(s.created_at) >= t0), month = all.filter(s => new Date(s.created_at) >= m0);
-      return { today_total: sum(today), today_count: today.length, month_total: sum(month), month_count: month.length, total_count: all.length, first_sale_at: all.length ? all[all.length - 1].created_at : null };
-    },
-    async sales(id, token, before, limit) {
-      demoAuth(id);
-      let a = demoSales(id);
-      if (before) a = a.filter(s => s.created_at < before);
-      return a.slice(0, Math.min(Math.max(limit || 50, 1), 100));
-    },
-    async unlink(id) { const L = links(); delete L[id]; saveLinks(L); return { status: 'none' }; },
-    async registerPush() { return { status: 'ok' }; },   // demostración: no hay servidor real al que avisar
-    async registerDevice() { return { status: 'ok' }; }
-  };
-
-  const api = () => live() ? realApi : demoApi;
-  const call = name => (...a) => Biz._fail && name !== 'unlink' ? Promise.reject(new Error(Biz._fail)) : api()[name](...a);
-  return { cfg, live, demo, _fail: null, requestLink: call('requestLink'), linkStatus: call('linkStatus'), summary: call('summary'), sales: call('sales'), unlink: call('unlink'), registerPush: call('registerPush'), registerDevice: call('registerDevice') };
-})();
-
-const pluralVentas = n => n === 1 ? '1 venta' : n + ' ventas';
-// Identificador secreto de este teléfono; la tienda aprueba a este "dispositivo"
-function bizToken() {
-  if (!S.deviceToken) {
-    const a = new Uint8Array(24); (window.crypto || window.msCrypto).getRandomValues(a);
-    S.deviceToken = [...a].map(b => b.toString(16).padStart(2, '0')).join(''); save();
-  }
-  return S.deviceToken;
-}
-function bizErr(e) {
-  const m = e && e.message;
-  if (m === 'store_not_found') return 'No existe una tienda con ese ID';
-  if (m === 'too_many_requests') return 'Hay demasiadas solicitudes para esa tienda. Inténtalo más tarde';
-  if (m === 'network') return 'Sin conexión con el servidor';
-  if (m === 'not_ready') return 'El servidor todavía no está preparado (falta ejecutar el SQL en Supabase)';
-  return 'No se pudo verificar la tienda';
-}
-
-/* --- Vincular una tienda (pide el ID y espera la confirmación de la app de tienda) --- */
-function openBizLink() {
-  if (S.bizPending) return bizWaiting();
-  openSheet('Cuenta Empresarial', `
-    <p class="muted" style="line-height:1.5;margin:-4px 0 16px">Escribe el ID de 8 dígitos de tu tienda. La app de la tienda tendrá que confirmar la solicitud.</p>
-    <div class="field"><label>ID de la tienda</label>
-      <input id="biz-id" class="inp" inputmode="numeric" maxlength="8" placeholder="00000000" autocomplete="off" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,8)">
-      ${Biz.live() ? '' : '<div class="hint">Modo demostración: usa el ID 12345678.</div>'}</div>
-    <button class="btn" id="biz-go" onclick="bizRequest()">Solicitar acceso</button>`);
-}
-async function bizRequest() {
-  const id = $('#biz-id').value.trim();
-  if (!/^\d{8}$/.test(id)) return toast('El ID debe tener 8 dígitos');
-  if (S.stores.some(s => s.storeId === id)) return toast('Esa tienda ya está vinculada');
-  const btn = $('#biz-go'); btn.disabled = true; btn.textContent = 'Verificando…';
-  const code = String(Math.floor(1000 + Math.random() * 9000));
-  try {
-    const r = await Biz.requestLink(id, bizToken(), code, 'Wallet');
-    if (r && r.status === 'approved') return bizApproved(id, r.store_name, r.currency);
-    S.bizPending = { storeId: id, code, at: Date.now() }; save(); render();
-    bizWaiting();
-  } catch (e) {
-    const b = $('#biz-go'); if (b) { b.disabled = false; b.textContent = 'Solicitar acceso'; }
-    toast(bizErr(e));
-  }
-}
-function bizWaiting() {
-  const p = S.bizPending; if (!p) return openBizLink();
-  openSheet('Esperando confirmación', `
-    <div class="biz-wait">
-      <div class="spinner"></div>
-      <div class="muted small">Código de verificación</div>
-      <div class="biz-code">${esc(p.code)}</div>
-      <p class="muted" style="line-height:1.5">Abre la app de tu tienda y confirma la solicitud del ID <b>${esc(p.storeId)}</b>. Comprueba que el código sea el mismo.</p>
-      ${Biz.live() ? '' : '<p class="hint">Modo demostración: se confirma solo en unos segundos.</p>'}
-    </div>
-    <button class="btn ghost" onclick="bizCancel()">Cancelar solicitud</button>`);
-  bizPollStart();
-}
-function bizCancel() {
-  const p = S.bizPending; S.bizPending = null; save(); bizPollStop(); closeSheet(); render();
-  if (p) Biz.unlink(p.storeId, bizToken()).catch(() => {});
-  toast('Solicitud cancelada');
-}
-function bizClearPending(msg) {
-  S.bizPending = null; save(); bizPollStop();
-  if (sheetOpen()) closeSheet();
-  render(); toast(msg);
-}
-function bizApproved(storeId, name, currency) {
-  S.bizPending = null; bizPollStop();
-  const st = { id: uid(), storeId, name: name || ('Tienda ' + storeId), currency: currency || 'CUP', linkedAt: Date.now(), cache: null };
-  S.stores.push(st); save(); closeSheet(); render(); toast('Tienda vinculada');
-  openStore(st.id);
-  initPush();
-}
-
-/* --- Notificaciones push: ventas, tasa del dólar y nuevas versiones ---
-   Si esta instalación no trae el complemento (falta Firebase, o aún no
-   se configuró), estas funciones no hacen nada, en silencio. Se registra
-   el teléfono SIEMPRE (no solo con una tienda vinculada), porque la tasa
-   y los avisos de versión son generales, no de ninguna tienda. */
-async function initPush() {
-  const PN = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications;
-  if (!PN) return;
-  if (S.fcmToken) return syncPush();   // ya registrado antes: solo confirma con el servidor, sin pedir permiso otra vez
-  try {
-    const perm = await PN.requestPermissions();
-    if (perm.receive !== 'granted' && perm.receive !== 'prompt-with-rationale') return;
-    PN.addListener('registration', t => { S.fcmToken = t.value; save(); syncPush(); });
-    PN.addListener('registrationError', () => {});
-    await PN.register();
-  } catch (e) { /* sin permiso, o esta instalación no lo soporta: se ignora */ }
-}
-function syncPush() {
-  if (!S.fcmToken) return;
-  Biz.registerDevice(bizToken(), S.fcmToken).catch(() => {});                                      // notificaciones generales (tasa, versión)
-  S.stores.forEach(st => Biz.registerPush(st.storeId, bizToken(), S.fcmToken).catch(() => {}));     // + las de cada tienda vinculada
-}
-// Mientras hay una solicitud pendiente, se pregunta cada pocos segundos si la tienda ya confirmó
-let bizTimer = null, bizBusy = false;
-function bizPollStart() { if (!bizTimer) bizTimer = setInterval(bizCheck, 3000); bizCheck(); }
-function bizPollStop() { clearInterval(bizTimer); bizTimer = null; }
-async function bizCheck() {
-  const p = S.bizPending;
-  if (!p) return bizPollStop();
-  if (Date.now() - p.at > 15 * 60 * 1000) return bizClearPending('La solicitud caducó. Vuelve a intentarlo');
-  if (bizBusy) return;
-  bizBusy = true;
-  try {
-    const r = await Biz.linkStatus(p.storeId, bizToken());
-    if (!S.bizPending || S.bizPending.storeId !== p.storeId) return;   // la cancelaron mientras tanto
-    if (r.status === 'approved') bizApproved(p.storeId, r.store_name, r.currency);
-    else if (r.status === 'rejected' || r.status === 'revoked') bizClearPending('La tienda rechazó la solicitud');
-    else if (r.status === 'expired' || r.status === 'none') bizClearPending('La solicitud ya no existe. Vuelve a intentarlo');
-  } catch (e) { /* sin conexión: se vuelve a intentar */ }
-  finally { bizBusy = false; }
-}
-document.addEventListener('visibilitychange', () => { if (!document.hidden && S.bizPending) bizCheck(); });
-
-/* --- Inicio: sección "Mis Tiendas" --- */
-function bizSection() {
-  if (!S.stores.length && !S.bizPending) return '';
-  const p = S.bizPending;
-  return `<div class="sec-head"><h2>Mis Tiendas</h2></div>
-  <div class="biz-list">
-    ${p ? `<button class="biz-card pend" onclick="bizWaiting()"><span class="biz-ic">${I.store}</span><span class="grow"><div class="biz-n">Tienda ${esc(p.storeId)}</div><div class="muted small">Esperando confirmación · código ${esc(p.code)}</div></span><span class="spinner sm"></span></button>` : ''}
-    ${S.stores.map(st => { const sm = st.cache && st.cache.summary; return `<button class="biz-card" onclick="openStore('${st.id}')"><span class="biz-ic">${I.store}</span><span class="grow"><div class="biz-n">${esc(st.name)}</div><div class="muted small">${sm ? 'Hoy: ' + money(+sm.today_total, st.currency) + ' · ' + pluralVentas(+sm.today_count) : 'Toca para ver las ventas'}</div></span>${I.chevR}</button>`; }).join('')}
-  </div>`;
-}
-
-/* --- Pantalla aparte de la tienda: resumen y lista de ventas --- */
-function openStore(id) {
-  const st = S.stores.find(s => s.id === id); if (!st) return;
-  UI.storeId = id; UI.biz = { loading: true, error: '', more: !!(st.cache && st.cache.sales.length >= 50) };
-  go('store'); bizLoad();
-}
-async function bizLoad() {
-  const st = S.stores.find(s => s.id === UI.storeId); if (!st) return;
-  UI.biz = Object.assign(UI.biz || {}, { loading: true, error: '' });
-  try {
-    const [sm, page] = await Promise.all([Biz.summary(st.storeId, bizToken()), Biz.sales(st.storeId, bizToken(), null, 50)]);
-    st.cache = { summary: sm, sales: page, at: Date.now() };
-    UI.biz.more = page.length >= 50;
-  } catch (e) {
-    UI.biz.error = e.message === 'not_authorized' ? 'revoked' : e.message === 'network' ? 'offline' : 'server';
-  }
-  UI.biz.loading = false; save();
-  if (UI.screen === 'store' && UI.storeId === st.id) render();
-}
-function bizRefresh() { if (!(UI.biz && UI.biz.loading)) { UI.biz = Object.assign(UI.biz || {}, { loading: true }); render(); bizLoad(); } }
-async function bizMore() {
-  const st = S.stores.find(s => s.id === UI.storeId), list = st && st.cache && st.cache.sales, last = list && list[list.length - 1];
-  if (!last || UI.biz.moreLoading) return;
-  UI.biz.moreLoading = true; render();
-  try {
-    const page = await Biz.sales(st.storeId, bizToken(), last.created_at, 50), seen = new Set(list.map(s => s.id));
-    page.forEach(s => { if (!seen.has(s.id)) list.push(s); });
-    UI.biz.more = page.length >= 50 && list.length < 400; save();
-  } catch (e) { toast(bizErr(e)); }
-  UI.biz.moreLoading = false;
-  if (UI.screen === 'store') render();
-}
-function saleRow(s, cur) {
-  const items = s.items || [];
-  const title = items.length ? items.map(i => (i.qty > 1 ? i.qty + '× ' : '') + i.name).join(', ') : (s.note || 'Venta');
-  const sub = hhmm(s.created_at) + (s.payment_method ? ' · ' + s.payment_method : '');
-  return `<button class="tx sale" onclick="openSale('${esc(s.id)}')">
-    <div class="tx-ic" style="background:#4ade8022">🛒</div>
-    <div class="tx-main"><div class="tx-t">${esc(title)}</div><div class="tx-s">${esc(sub)}</div></div>
-    <div class="tx-r"><div class="tx-a pos">${S.hide ? '••••' : '+' + nf.format(+s.total)}</div></div>
-  </button>`;
-}
-function vStore() {
-  const st = S.stores.find(s => s.id === UI.storeId), B = UI.biz || {};
-  const head = `<header class="top"><button class="icon-btn" onclick="go('home')" aria-label="Volver">${I.back}</button><h1 class="ell">${esc(st ? st.name : 'Tienda')}</h1><button class="icon-btn ${B.loading ? 'spin' : ''}" onclick="bizRefresh()" aria-label="Actualizar ventas">${I.refresh}</button></header>`;
-  if (!st) return head + `<div class="empty">Esta tienda ya no está vinculada.</div>`;
-  if (B.error === 'revoked') return head + `<div class="panel" style="text-align:center"><div style="font-size:34px;margin-bottom:8px">🔒</div><div style="font-weight:600;margin-bottom:6px">La tienda ya no te da acceso</div><p class="muted" style="line-height:1.5;margin-bottom:16px">La app de la tienda cerró esta vinculación. Puedes quitarla de Wallet y pedir acceso de nuevo.</p><button class="btn danger" onclick="bizUnlinkAsk()">Quitar tienda</button></div>`;
-  const cur = st.currency || 'CUP', c = st.cache, sm = c && c.summary, list = (c && c.sales) || [];
-  const demo = Biz.live() ? '' : `<div class="biz-demo">Modo demostración · ventas de ejemplo</div>`;
-  const note = B.error ? `<div class="biz-note">${B.error === 'offline' ? 'Sin conexión. Mostrando lo último guardado.' : 'No se pudieron actualizar las ventas.'} <button class="link" onclick="bizRefresh()">Reintentar</button></div>` : '';
-  const tiles = sm ? `<div class="tiles">
-    <div class="tile"><div class="muted small">Hoy</div><div class="v pos">${short(+sm.today_total)}</div><div class="muted small">${cur} · ${pluralVentas(+sm.today_count)}</div></div>
-    <div class="tile"><div class="muted small">Este mes</div><div class="v">${short(+sm.month_total)}</div><div class="muted small">${cur} · ${pluralVentas(+sm.month_count)}</div></div>
-  </div>` : '';
-  // Cuántas ventas hay registradas en total y desde cuándo (si el servidor ya lo informa)
-  const hist = sm && sm.total_count != null ? `<div class="muted small" style="text-align:center;margin:12px 0 -4px">${pluralVentas(+sm.total_count)} registradas${sm.first_sale_at ? ' · la más antigua, del ' + new Date(sm.first_sale_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</div>` : '';
-  let body;
-  if (!list.length) body = `<div class="empty">${B.loading ? 'Cargando ventas…' : c ? 'Esta tienda todavía no tiene ventas.' : 'No hay datos todavía.'}</div>`;
-  else {
-    const g = {}; list.forEach(s => (g[dayKey(s.created_at)] = g[dayKey(s.created_at)] || []).push(s));
-    body = Object.keys(g).sort().reverse().map(k => `<div class="day row-between"><span>${dayLabel(k)}</span><span>${money(g[k].reduce((a, s) => a + (+s.total || 0), 0), cur)}</span></div>${g[k].map(s => saleRow(s, cur)).join('')}`).join('');
-  }
-  const more = B.more ? `<button class="btn ghost" style="margin-top:14px" ${B.moreLoading ? 'disabled' : ''} onclick="bizMore()">${B.moreLoading ? 'Cargando…' : 'Cargar más ventas'}</button>` : '';
-  const stamp = c && c.at ? `<div class="muted small" style="text-align:center;margin-top:16px">Actualizado ${dayLabel(dayKey(c.at)).toLowerCase()}, ${hhmm(c.at)}</div>` : '';
-  return `${head}${demo}${note}${tiles}${hist}
-  <div class="sec-head"><h2>Ventas</h2></div>${body}${more}${stamp}
-  <button class="btn danger" style="margin-top:22px" onclick="bizUnlinkAsk()">Quitar tienda de Wallet</button>`;
-}
-function openSale(sid) {
-  const st = S.stores.find(s => s.id === UI.storeId), s = st && st.cache && st.cache.sales.find(x => x.id === sid); if (!s) return;
-  const cur = st.currency || 'CUP', d = new Date(s.created_at), items = s.items || [];
-  openSheet('Venta', `
-    <div style="text-align:center;margin:-6px 0 18px"><div class="tx-a pos" style="font-size:30px">${money(+s.total, cur)}</div>
-      <div class="muted small">${dayLabel(dayKey(d))}, ${hhmm(d)}${s.payment_method ? ' · ' + esc(s.payment_method) : ''}</div></div>
-    ${items.length ? `<div class="panel" style="padding:4px 16px">${items.map(i => `<div class="row-between" style="padding:11px 0;border-bottom:1px solid var(--line)"><span>${esc(i.qty)} × ${esc(i.name)}</span><span>${money(i.qty * i.price, cur)}</span></div>`).join('')}</div>` : ''}
-    ${s.note ? `<p class="muted" style="margin-top:14px;line-height:1.5">${esc(s.note)}</p>` : ''}`);
-}
-function bizUnlinkAsk() {
-  const st = S.stores.find(s => s.id === UI.storeId); if (!st) return;
-  confirmBox('Se quitará esta tienda de Wallet. Para volver a ver sus ventas tendrás que pedir acceso otra vez y la app de la tienda deberá confirmarlo.', 'Quitar tienda', () => {
-    Biz.unlink(st.storeId, bizToken()).catch(() => {});
-    S.stores = S.stores.filter(s => s.id !== st.id); save(); closeSheet(); go('home'); toast('Tienda quitada');
-  });
-}
-
 /* ====== Inicio ====== */
 save();
 applyAnim();
 render();
-if (S.bizPending) bizPollStart();   // si quedó una solicitud esperando a la tienda, se sigue preguntando
-initPush();   // si hay tiendas vinculadas, intenta tener listas sus notificaciones de venta
 if (!S.onboarded) setTimeout(onboard, 300);
 setTimeout(() => checkUpdate(true), 2500);
 setTimeout(() => updateStreetRate(true), 3200);
