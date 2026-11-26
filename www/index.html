@@ -217,12 +217,17 @@ input[type=datetime-local].inp{color-scheme:dark}
 .cnt-total.has{background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
 .cnt-total-amt{display:flex;align-items:baseline;gap:6px;font-size:20px;font-weight:600}
 .cnt-total-amt small{font-size:13px;font-weight:600;color:var(--muted)}
-.cnt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.cnt-card{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:8px;transition:border-color .15s,background .15s}
+.cnt-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.cnt-card{display:grid;grid-template-columns:1fr minmax(62px,48%);grid-template-areas:"lbl qty" "sub qty";align-items:center;column-gap:8px;background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:8px 8px 8px 12px;transition:border-color .15s,background .15s}
 .cnt-card.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
-.cnt-lbl{font-weight:600;font-size:12.5px}
-.cnt-qty{width:100%;text-align:center;font-size:15px;font-weight:600;padding:7px;margin-top:6px}
-.cnt-sub{font-size:10.5px;color:var(--muted);margin-top:4px;min-height:13px}
+.cnt-lbl{grid-area:lbl;font-weight:700;font-size:16px;line-height:1.1}
+.cnt-qty{grid-area:qty;width:100%;text-align:center;font-size:16px;font-weight:600;padding:9px 6px;margin:0}
+.cnt-sub{grid-area:sub;font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cnt-sub:empty{display:none}
+.cnt-card{min-height:58px;align-content:center}
+.cnt-lbl{align-self:end}
+.cnt-sub{align-self:start}
+.cnt-card:has(.cnt-sub:empty) .cnt-lbl{grid-row:1 / span 2;align-self:center}
 
 /* Estadísticas */
 .month-nav{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px;margin-bottom:16px}
@@ -873,7 +878,7 @@ let toastT;
 function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2200); }
 
 /* ====== Navegación ====== */
-const APP_VERSION = '3.0.2';
+const APP_VERSION = '3.0.3';
 
 /* ====== Actualizaciones desde GitHub Releases ====== */
 const GH_REPO = 'LuisARF04/mis-finanzas'; // usuario/repositorio donde se compila el APK
