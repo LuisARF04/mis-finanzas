@@ -2,10 +2,11 @@ name: Avisar la tasa del dólar
 
 on:
   schedule:
-    # 13:00 UTC = 9:00 AM en Cuba mientras está en horario de verano (hasta
-    # el 1 de noviembre de 2026). Después de ese cambio de hora, para que
-    # siga siendo las 9:00 AM hay que poner '0 14 * * *' en vez de esto.
-    - cron: '0 13 * * *'
+    # 14:00 UTC = 9:00 AM en Cuba en horario normal (desde el 1 de
+    # noviembre). Cuando vuelva el horario de verano (en marzo), para que
+    # siga siendo las 9:00 AM hay que poner '0 13 * * *'.
+    # Ojo: GitHub a veces retrasa varias horas los workflows programados.
+    - cron: '0 14 * * *'
   workflow_dispatch:
 
 jobs:
