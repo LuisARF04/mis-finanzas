@@ -39,6 +39,18 @@ jobs:
       - name: Copiar la web al proyecto
         run: npx cap sync android
 
+      # Actualizador interno: descarga el APK nuevo dentro de la app y abre el
+      # instalador de Android, sin pasar por el navegador (código en native/).
+      - name: Agregar el actualizador interno
+        run: |
+          set -e
+          PKG_DIR=android/app/src/main/java/com/misfinanzas/cup
+          test -d "$PKG_DIR"
+          cp native/ApkUpdaterPlugin.java native/UpdateFileProvider.java "$PKG_DIR/"
+          mkdir -p android/app/src/main/res/xml
+          cp native/update_paths.xml android/app/src/main/res/xml/update_paths.xml
+          python3 scripts/add_updater.py android/app/src/main/AndroidManifest.xml
+
       # Selector de contactos del teléfono (código nativo propio en la carpeta native/).
       # Solo pide permiso de LECTURA de contactos. Se prueba que compile; si por
       # cualquier motivo no compila, el siguiente paso lo quita y la app se
@@ -63,7 +75,8 @@ jobs:
           PKG_DIR=android/app/src/main/java/com/misfinanzas/cup
           [ -d "$PKG_DIR" ] || exit 0
           rm -f "$PKG_DIR/ContactPickerPlugin.java"
-          printf 'package com.misfinanzas.cup;\n\nimport com.getcapacitor.BridgeActivity;\n\npublic class MainActivity extends BridgeActivity {}\n' > "$PKG_DIR/MainActivity.java"
+          # MainActivity sin el selector de contactos, pero conservando el actualizador
+          printf 'package com.misfinanzas.cup;\n\nimport android.os.Bundle;\nimport com.getcapacitor.BridgeActivity;\n\npublic class MainActivity extends BridgeActivity {\n    @Override\n    public void onCreate(Bundle b) {\n        registerPlugin(ApkUpdaterPlugin.class);\n        super.onCreate(b);\n    }\n}\n' > "$PKG_DIR/MainActivity.java"
           sed -i '/android.permission.READ_CONTACTS/d' android/app/src/main/AndroidManifest.xml
           echo "AVISO: el selector de contactos no compiló; la app se construye sin esa función."
 

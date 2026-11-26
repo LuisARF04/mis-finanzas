@@ -49,6 +49,8 @@ svg{display:block}
 .chip-btn svg{width:14px;height:14px}
 .chip-btn.upd{background:var(--accent);color:var(--accent-ink);font-weight:700}
 .chip-btn:disabled{opacity:.6}
+.updbar{height:6px;border-radius:99px;background:var(--surface3);overflow:hidden;margin-top:8px}
+.updbar i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .2s}
 .dot-upd{position:absolute;top:9px;right:10px;width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--surface)}
 .big-amount{flex-wrap:wrap;font-size:clamp(24px,8.5vw,40px);font-weight:600;letter-spacing:-.5px;margin-top:8px;display:flex;align-items:baseline;gap:8px}
 .big-amount small{font-size:16px;color:var(--muted);font-weight:500}
@@ -871,23 +873,46 @@ let toastT;
 function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2200); }
 
 /* ====== Navegación ====== */
-const APP_VERSION = '3.0.1';
+const APP_VERSION = '3.0.2';
 
 /* ====== Actualizaciones desde GitHub Releases ====== */
 const GH_REPO = 'LuisARF04/mis-finanzas'; // usuario/repositorio donde se compila el APK
-const UPD = { state: 'idle', latest: null, url: null, msg: '' };
+const UPD = { state: 'idle', latest: null, url: null, msg: '', pct: 0, bytes: 0, total: 0, waitPerm: false };
 const verParts = v => String(v).split('.').map(n => parseInt(n, 10) || 0);
 function isNewer(a, b) {
   const x = verParts(a), y = verParts(b);
   for (let i = 0; i < Math.max(x.length, y.length); i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d > 0; }
   return false;
 }
+const mbs = n => (n / 1048576).toFixed(1).replace('.', ',');
+function dlText() {
+  return `Descargando ${UPD.latest}… ` + (UPD.pct >= 0 ? UPD.pct + '%' : '') +
+    (UPD.total > 0 ? ` (${mbs(UPD.bytes)} de ${mbs(UPD.total)} MB)` : UPD.bytes ? ` (${mbs(UPD.bytes)} MB)` : '');
+}
 function updText() {
   return { idle: 'Busca si hay una versión nueva', checking: 'Buscando…', latest: 'Tienes la última versión',
-    available: `Hay una versión nueva: ${UPD.latest}`, error: UPD.msg }[UPD.state];
+    available: `Hay una versión nueva: ${UPD.latest}`, error: UPD.msg,
+    downloading: dlText(), ready: `Versión ${UPD.latest} descargada, lista para instalar`, dlerror: UPD.msg }[UPD.state];
+}
+function updGroupHTML() {
+  const s = UPD.state, v = UPD.latest;
+  const btn = s === 'available' ? `<button class="chip-btn upd" onclick="downloadUpdate()">Descargar ${v}</button>`
+    : s === 'downloading' ? ''
+    : s === 'ready' ? `<button class="chip-btn upd" onclick="installUpdate()">Instalar ${v}</button>`
+    : s === 'dlerror' ? `<button class="chip-btn upd" onclick="downloadUpdate()">Reintentar</button>`
+    : `<button class="chip-btn" onclick="checkUpdate()" ${s === 'checking' ? 'disabled' : ''}>${s === 'checking' ? 'Buscando…' : 'Buscar'}</button>`;
+  return `<div class="set-row">
+    <div class="grow"><div>Versión ${APP_VERSION}</div><div class="muted small" id="upd-txt">${updText()}</div>
+      ${s === 'downloading' ? `<div class="updbar"><i id="upd-bar" style="width:${Math.max(0, UPD.pct)}%"></i></div>` : ''}</div>
+    ${btn}</div>`;
+}
+function updRefresh() {
+  const g = document.getElementById('upd-group');
+  if (g) g.innerHTML = updGroupHTML(); else if (UI.screen === 'home') render();
 }
 async function checkUpdate(silent) {
-  UPD.state = 'checking'; if (!silent && UI.screen === 'settings') render();
+  if (['downloading', 'ready'].includes(UPD.state)) return;
+  UPD.state = 'checking'; if (!silent) updRefresh();
   try {
     const r = await fetch(`https://api.github.com/repos/${GH_REPO}/releases/latest`, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' });
     if (!r.ok) throw new Error(r.status === 404 ? 'No se encontró el repositorio (¿es público?) o aún no tiene versiones' : 'GitHub respondió con error ' + r.status);
@@ -902,13 +927,54 @@ async function checkUpdate(silent) {
     UPD.msg = e instanceof TypeError ? 'Sin conexión a internet' : e.message;
   }
   if (silent) { if (UPD.state === 'available') { toast(`Versión ${UPD.latest} disponible en Ajustes`); render(); } }
-  else if (UI.screen === 'settings') render();
+  else updRefresh();
 }
-function downloadUpdate() {
-  const Br = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser;
-  if (Br) Br.open({ url: UPD.url }); else window.open(UPD.url, '_blank');
-  toast('Cuando termine la descarga, toca el archivo para instalar');
+// La actualización se descarga dentro de la app (plugin nativo ApkUpdater)
+// y al terminar se abre el instalador de Android, sin pasar por el navegador.
+const apkPlugin = () => { const c = window.Capacitor; return c && c.Plugins && c.Plugins.ApkUpdater; };
+async function downloadUpdate() {
+  const U = apkPlugin();
+  if (!U) { // sin el plugin (por ejemplo, probando en el navegador): descarga normal
+    const Br = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser;
+    if (Br) Br.open({ url: UPD.url }); else window.open(UPD.url, '_blank');
+    return;
+  }
+  if (UPD.state === 'downloading') return;
+  UPD.state = 'downloading'; UPD.pct = 0; UPD.bytes = 0; UPD.total = 0; updRefresh();
+  let h = null;
+  try {
+    h = await U.addListener('progress', e => {
+      UPD.pct = e.percent; UPD.bytes = e.bytes; UPD.total = e.total;
+      const bar = document.getElementById('upd-bar'); if (bar) bar.style.width = Math.max(0, e.percent) + '%';
+      const t = document.getElementById('upd-txt'); if (t) t.textContent = dlText();
+    });
+  } catch (e) {}
+  try {
+    await U.download({ url: UPD.url });
+    UPD.state = 'ready'; updRefresh();
+    installUpdate();
+  } catch (e) {
+    UPD.state = 'dlerror'; UPD.msg = (e && e.message) || 'No se pudo descargar la actualización'; updRefresh();
+    toast('No se pudo descargar la actualización');
+  } finally { try { h && h.remove && h.remove(); } catch (e) {} }
 }
+async function installUpdate() {
+  const U = apkPlugin(); if (!U) return;
+  try {
+    const r = await U.install();
+    if (r && r.needsPermission) { UPD.waitPerm = true; toast('Activa "Permitir desde esta fuente" y vuelve: la instalación sigue sola'); }
+    else UPD.waitPerm = false;
+  } catch (e) { UPD.state = 'dlerror'; UPD.msg = (e && e.message) || 'No se pudo abrir el instalador'; updRefresh(); }
+}
+// Al volver de Ajustes de Android después de dar el permiso, se abre el instalador solo
+try {
+  const A = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+  if (A) A.addListener('resume', async () => {
+    if (!UPD.waitPerm || UPD.state !== 'ready') return;
+    const U = apkPlugin(); if (!U) return;
+    try { const c = await U.canInstall(); if (c && c.allowed) { UPD.waitPerm = false; installUpdate(); } } catch (e) {}
+  });
+} catch (e) {}
 function applyAnim() { document.documentElement.classList.toggle('no-anim', !S.anim); }
 function toggleAnim() { S.anim = !S.anim; save(); applyAnim(); render(); toast(S.anim ? 'Animaciones activadas' : 'Animaciones desactivadas'); }
 function toggleFullAccList() { S.fullAccList = !S.fullAccList; save(); render(); toast(S.fullAccList ? 'Mostrando todas las cuentas' : 'Volviendo a la pila de cuentas'); }
@@ -999,7 +1065,7 @@ function vHome() {
   <header class="top">
     <label class="avatar" aria-label="Cambiar foto de perfil">${avatarInner()}<input type="file" accept="image/*" hidden onchange="setPhoto(this)"></label>
     <div class="grow"><div class="hello">${greeting()}</div><div class="uname">${esc(S.name || 'Usuario')}</div></div>
-    <button class="icon-btn" onclick="go('settings')" aria-label="Ajustes">${I.gear}${UPD.state === 'available' ? '<span class="dot-upd"></span>' : ''}</button>
+    <button class="icon-btn" onclick="go('settings')" aria-label="Ajustes">${I.gear}${['available', 'ready'].includes(UPD.state) ? '<span class="dot-upd"></span>' : ''}</button>
   </header>
 
   <section class="panel">
@@ -1580,12 +1646,7 @@ function vSettings() {
   <header class="top"><button class="icon-btn" onclick="go('home')" aria-label="Volver">${I.back}</button><h1>Ajustes</h1><span class="spacer"></span></header>
 
   <div class="set-title">Actualización</div>
-  <div class="set-group"><div class="set-row">
-    <div class="grow"><div>Versión ${APP_VERSION}</div><div class="muted small">${updText()}</div></div>
-    ${UPD.state === 'available'
-      ? `<button class="chip-btn upd" onclick="downloadUpdate()">Descargar ${UPD.latest}</button>`
-      : `<button class="chip-btn" onclick="checkUpdate()" ${UPD.state === 'checking' ? 'disabled' : ''}>${UPD.state === 'checking' ? 'Buscando…' : 'Buscar'}</button>`}
-  </div></div>
+  <div class="set-group" id="upd-group">${updGroupHTML()}</div>
 
   <div class="set-title">Perfil</div>
   <div class="set-group">
