@@ -218,6 +218,16 @@ input[type=datetime-local].inp{color-scheme:dark}
 .cnt-total-amt{display:flex;align-items:baseline;gap:6px;font-size:20px;font-weight:600}
 .cnt-total-amt small{font-size:13px;font-weight:600;color:var(--muted)}
 .cnt-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+/* El contador ocupa todo el alto disponible: las 6 filas se estiran hasta llenar la pantalla */
+.app.scr-counter{display:flex;flex-direction:column}
+.scr-counter #counterBody{flex:1;min-height:0;display:flex;flex-direction:column}
+.scr-counter .cnt-grid{flex:1;grid-template-rows:repeat(6,minmax(58px,1fr));gap:10px;max-height:680px}
+.scr-counter .cnt-card{padding:8px 10px 8px 14px;border-radius:16px}
+.scr-counter .cnt-lbl{font-size:clamp(17px,5.4vw,22px)}
+.scr-counter .cnt-sub{font-size:clamp(11px,3.4vw,13.5px);margin-top:3px}
+.scr-counter .cnt-qty{font-size:clamp(17px,5.4vw,22px);height:min(100%,52px);padding:6px}
+.scr-counter .cnt-total-amt{font-size:clamp(20px,6.4vw,26px)}
+.scr-counter .cnt-total-amt small{font-size:14px}
 .cnt-card{display:grid;grid-template-columns:1fr minmax(62px,48%);grid-template-areas:"lbl qty" "sub qty";align-items:center;column-gap:8px;background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:8px 8px 8px 12px;transition:border-color .15s,background .15s}
 .cnt-card.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
 .cnt-lbl{grid-area:lbl;font-weight:700;font-size:16px;line-height:1.1}
@@ -878,7 +888,7 @@ let toastT;
 function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2200); }
 
 /* ====== Navegación ====== */
-const APP_VERSION = '3.0.3';
+const APP_VERSION = '3.0.4';
 
 /* ====== Actualizaciones desde GitHub Releases ====== */
 const GH_REPO = 'LuisARF04/mis-finanzas'; // usuario/repositorio donde se compila el APK
@@ -992,6 +1002,7 @@ function render() {
     setTimeout(() => main.classList.remove('intro'), 500);
   }
   main.innerHTML = views[UI.screen]();
+  main.classList.toggle('scr-counter', UI.screen === 'counter');
   UI.justSel = null; UI.newTx = null;
   renderNav();
   if (UI.screen === 'history') renderHistList();
