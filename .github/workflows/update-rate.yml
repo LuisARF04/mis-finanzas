@@ -1,54 +1,33 @@
 name: Actualizar tasa de El Toque y QvaPay
 
 on:
-  schedule:
-    - cron: '0 * * * *'   # cada hora, en punto (hora UTC)
-  workflow_dispatch:        # y también se puede correr a mano desde la pestaña Actions
-
-permissions:
-  contents: write
+  workflow_dispatch:
 
 jobs:
-  update-rate:
+  sondeo:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      # USD y MLC: lee el canal público de Telegram de El Toque (el nuevo,
-      # @eltoquecom2), donde publican la tasa todos los días. No hace
-      # falta ningún token: es una página pública, igual que la de QvaPay.
-      - name: Leer USD y MLC del canal de Telegram de El Toque
+      - name: Probar fuentes
         run: |
-          http_code=$(curl -sL -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" \
-            -o /tmp/eltoque_telegram.html -w "%{http_code}" \
-            https://t.me/s/eltoquecom2)
-          echo "Codigo de respuesta: $http_code"
-          if [ "$http_code" != "200" ]; then
-            echo "Telegram no respondio con exito (codigo $http_code)."
-            exit 1
-          fi
-          python3 scripts/parse_rate.py
-
-      # SQP: lee el canal público de Telegram de QvaPay, donde publican
-      # sus propias tasas P2P (cambiocup.com no se puede leer directo
-      # porque arma sus números con JavaScript).
-      - name: Leer SQP del canal de Telegram de QvaPay
-        continue-on-error: true   # si esto falla, que no tumbe la tasa de USD/MLC que ya se guardó
-        run: |
-          http_code=$(curl -sL -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" \
-            -o /tmp/telegram.html -w "%{http_code}" \
-            https://t.me/s/QvaPay_com)
-          echo "Codigo de respuesta: $http_code"
-          if [ "$http_code" != "200" ]; then
-            echo "Telegram no respondio con exito (codigo $http_code)."
-            exit 1
-          fi
-          python3 scripts/parse_sqp.py
-
-      - name: Guardar el resultado en el repositorio
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add rates.json
-          git diff --quiet --cached && echo "Sin cambios en la tasa" || git commit -m "Actualizar tasas (El Toque / QvaPay)"
-          git push
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Safari/537.36"
+          probe(){ code=$(curl -sL -A "$UA" --max-time 25 -o /tmp/p.html -w "%{http_code}" "$1"); size=$(wc -c </tmp/p.html); echo "=== $1 -> $code ($size bytes)"; python3 - "$2" <<'PY'
+          import re,sys,html
+          t=open('/tmp/p.html',encoding='utf-8',errors='ignore').read()
+          t=re.sub(r'<script.*?</script>|<style.*?</style>','',t,flags=re.S)
+          t=html.unescape(re.sub(r'<[^>]+>',' ',t)); t=re.sub(r'\s+',' ',t)
+          pat=sys.argv[1]
+          hits=[m.start() for m in re.finditer(pat,t,re.I)]
+          print('  coincidencias "%s": %d'%(pat,len(hits)))
+          for h in hits[-3:]: print('  ...',t[max(0,h-120):h+160])
+          if not hits: print('  inicio:',t[:300])
+          PY
+          }
+          probe https://t.me/s/eltoquecom "USD"
+          probe https://t.me/s/eltoquecom2 "USD"
+          probe https://t.me/s/eltoque "USD"
+          probe https://eltoque.com/tasas-de-cambio-de-moneda-en-cuba-hoy "USD"
+          probe https://eltoque.com/ "tasa"
+          probe https://tasas.eltoque.com/v1/trmi "."
+          probe https://www.cibercuba.com/noticias/tasa-de-cambio "USD"
+          probe https://www.directoriocubano.info/feed/ "USD"
+          probe https://api.cambiocuba.money/api/v1/x-rates "USD"
